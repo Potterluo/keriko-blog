@@ -1,0 +1,16 @@
+---
+import AboutPage from "@/components/layout/AboutPage.astro";
+import { getEntry, render } from "astro:content";
+
+const page = await getEntry("pages", "about");
+
+if (!page) {
+  throw new Error("Missing content entry: src/content/pages/about.md");
+}
+
+const { Content } = await render(page);
+---
+
+<AboutPage title={page.data.title} description={page.data.description}>
+  <Content />
+</AboutPage>

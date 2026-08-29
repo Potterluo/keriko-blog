@@ -1,0 +1,117 @@
+---
+import Icon from "@/components/ui/Icon.astro";
+import { getTranslator, I18nKey } from "@/i18n";
+
+const t = getTranslator();
+---
+
+<div
+  class="pointer-events-none fixed inset-x-0 bottom-12 z-40 translate-y-2 opacity-0 transition-[opacity,transform] duration-200 ease-out"
+  data-post-floating-actions
+  hidden
+>
+  <div class="mx-auto w-layout-width max-w-page tablet:w-layout-width-tablet wide:w-layout-width-wide">
+    <div class="mx-auto flex w-full max-w-reading wide:max-w-chrome wide:justify-center wide:gap-8">
+      <div class="hidden w-72 shrink-0 wide:block" aria-hidden="true"></div>
+      <div class="hidden w-full max-w-reading min-w-0 wide:block" aria-hidden="true"></div>
+      <div
+        class="pointer-events-auto hidden w-72 shrink-0 flex-col gap-2 wide:flex"
+        role="group"
+        aria-label={t(I18nKey.postQuickActions)}
+      >
+        <button
+          class="grid h-11 w-12 cursor-pointer place-items-center rounded-panel border border-border bg-panel text-accent-strong transition-colors hover:bg-accent hover:text-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
+          type="button"
+          aria-label={t(I18nKey.backToTop)}
+          data-back-to-top
+        >
+          <Icon class="-rotate-90" name="arrow" size={20} />
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let cleanupPostFloatingActions = () => {};
+
+  const setupPostFloatingActions = () => {
+    cleanupPostFloatingActions();
+
+    const actions = document.querySelector<HTMLElement>("[data-post-floating-actions]");
+    const backToTop = actions?.querySelector<HTMLButtonElement>("[data-back-to-top]");
+    const readingContent = document.querySelector<HTMLElement>("[data-reading-content]");
+
+    if (!actions || !backToTop || !readingContent) return;
+
+    const defaultBottom = Number.parseFloat(getComputedStyle(actions).bottom) || 0;
+
+    let frame = 0;
+    let revealFrame = 0;
+    let hideTimer = 0;
+    const updateVisibility = () => {
+      const cardBottom = readingContent.getBoundingClientRect().bottom;
+      const actionBottom = window.innerHeight - defaultBottom;
+      const shouldShow = window.scrollY >= window.innerHeight * 0.75 && cardBottom > actionBottom;
+      const isVisible = !actions.hidden && actions.classList.contains("opacity-100");
+
+      window.clearTimeout(hideTimer);
+
+      if (shouldShow === isVisible) return;
+
+      cancelAnimationFrame(revealFrame);
+
+      if (!shouldShow) {
+        actions.classList.remove("opacity-100");
+        actions.classList.add("opacity-0");
+        hideTimer = window.setTimeout(() => {
+          if (actions.classList.contains("opacity-0")) {
+            actions.hidden = true;
+            actions.classList.remove("translate-y-0");
+            actions.classList.add("translate-y-2");
+          }
+        }, 200);
+        return;
+      }
+
+      actions.hidden = false;
+      revealFrame = requestAnimationFrame(() => {
+        if (actions.hidden) return;
+
+        actions.classList.remove("translate-y-2", "opacity-0");
+        actions.classList.add("translate-y-0", "opacity-100");
+      });
+    };
+
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateVisibility);
+    };
+
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0 });
+    };
+
+    updateVisibility();
+    backToTop.addEventListener("click", scrollToTop);
+    document.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate, { passive: true });
+
+    cleanupPostFloatingActions = () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(revealFrame);
+      window.clearTimeout(hideTimer);
+      backToTop.removeEventListener("click", scrollToTop);
+      document.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupPostFloatingActions, { once: true });
+  } else {
+    setupPostFloatingActions();
+  }
+
+  document.addEventListener("astro:page-load", setupPostFloatingActions);
+</script>

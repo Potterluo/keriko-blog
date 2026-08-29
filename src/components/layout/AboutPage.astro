@@ -1,0 +1,83 @@
+---
+import { Image } from "astro:assets";
+import ContactLink from "@/components/content/ContactLink.astro";
+import TechStackCard from "@/components/content/TechStackCard.astro";
+import Card from "@/components/ui/Card.astro";
+import { aboutConfig } from "@/config/aboutConfig";
+import { siteConfig } from "@/config/siteConfig";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = aboutConfig.pageTitle, description = aboutConfig.pageDescription } = Astro.props;
+---
+
+<BaseLayout title={`${title} · ${siteConfig.title}`} description={description}>
+  <div class="w-full">
+    <Card as="header" class="grid min-h-80 grid-cols-4 items-center gap-12 px-12 py-10">
+      <div class="col-span-1 flex justify-center">
+        <div
+          class="relative grid size-46 place-items-center bg-avatar-stage before:absolute before:inset-0 before:rounded-full before:border before:border-accent/20 before:content-[''] after:absolute after:inset-3 after:rounded-full after:border after:border-dashed after:border-accent/20 after:content-['']"
+        >
+          <div
+            class="relative z-10 -rotate-2 rounded-avatar border border-border-strong bg-surface p-2 shadow-sm shadow-shadow"
+          >
+            <Image
+              class="size-38 rounded-avatar-image object-cover"
+              src={siteConfig.gravatarUrl}
+              width={152}
+              height={152}
+              alt=""
+              priority
+            />
+          </div>
+          <span
+            class="absolute right-2 bottom-3 z-20 size-6 rounded-full border-6 border-surface bg-success-light"
+            aria-hidden="true"></span>
+        </div>
+      </div>
+
+      <div class="col-span-3">
+        <p class="m-0 text-xs font-bold text-accent-strong">{aboutConfig.hero.eyebrow}</p>
+        <h1 class="mt-4 mb-0 text-profile-title font-extrabold text-text">{aboutConfig.hero.title}</h1>
+        <div class="mt-5 max-w-3xl text-base leading-8 text-text-soft">
+          {
+            aboutConfig.hero.description.map((paragraph, index) => (
+              <p class:list={["m-0", index > 0 && "mt-1"]}>{paragraph}</p>
+            ))
+          }
+        </div>
+        <ul class="mt-6 mb-0 flex list-none flex-wrap items-center gap-3 p-0" aria-label="联系方式">
+          {
+            aboutConfig.links.map((link) => (
+              <li>
+                <ContactLink {...link} />
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </Card>
+
+    <div class="mt-8 grid grid-cols-2">
+      <section class="border-r border-border pr-10" aria-label="关于我">
+        <div class="prose-content">
+          <slot />
+        </div>
+      </section>
+
+      <section class="pl-10" aria-labelledby="tech-stack-title">
+        <header>
+          <h2 class="m-0 text-2xl font-bold text-text" id="tech-stack-title">{aboutConfig.techStack.title}</h2>
+          <p class="mt-2 mb-0 text-sm leading-6 text-muted">{aboutConfig.techStack.description}</p>
+        </header>
+        <div class="mt-6 grid grid-cols-2 gap-4">
+          {aboutConfig.techStack.items.map((technology) => <TechStackCard {...technology} />)}
+        </div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>

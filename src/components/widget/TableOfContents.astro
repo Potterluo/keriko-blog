@@ -1,0 +1,152 @@
+---
+import Card from "@/components/ui/Card.astro";
+import { getTranslator, I18nKey } from "@/i18n";
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+
+const { headings } = Astro.props;
+const t = getTranslator();
+let sectionIndex = 0;
+const items = headings
+  .filter(({ depth }) => depth >= 2 && depth <= 4)
+  .map((heading) => ({
+    ...heading,
+    sectionIndex: heading.depth === 2 ? ++sectionIndex : undefined,
+  }));
+---
+
+{
+  items.length > 0 && (
+    <aside class="sticky top-4 mt-9 hidden w-72 shrink-0 wide:block" aria-label={t(I18nKey.tableOfContents)}>
+      <Card as="nav" class="p-4">
+        <h2 class="m-0 px-1 text-sm font-bold tablet:text-base">{t(I18nKey.tableOfContents)}</h2>
+
+        <ol class="relative mt-4 flex flex-col gap-1">
+          <li
+            class="pointer-events-none absolute inset-x-0 top-0 rounded-panel bg-accent-soft opacity-0 transition-[top,height,opacity] duration-200 ease-out"
+            data-toc-indicator
+            aria-hidden="true"
+          />
+          {items.map(({ depth, slug, text, sectionIndex }) => (
+            <li>
+              <a
+                class:list={[
+                  "relative z-10 flex min-w-0 items-center rounded-panel py-2 text-sm leading-5 text-text-soft transition-colors hover:text-accent-strong",
+                  depth === 2 && "gap-3 px-2",
+                  depth === 3 && "gap-4 pr-2 pl-6",
+                  depth === 4 && "gap-4 pr-2 pl-8",
+                ]}
+                href={`#${slug}`}
+                data-toc-link
+              >
+                {depth === 2 ? (
+                  <span class="flex size-5 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-xs font-bold text-accent-strong">
+                    {sectionIndex}
+                  </span>
+                ) : (
+                  <span
+                    class="size-2 shrink-0 rounded-full bg-accent/35 transition-colors"
+                    data-toc-marker
+                    aria-hidden="true"
+                  />
+                )}
+                <span class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">{text}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </Card>
+    </aside>
+  )
+}
+
+<script>
+  let cleanupTableOfContents = () => {};
+
+  const setupTableOfContents = () => {
+    cleanupTableOfContents();
+
+    const links = Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]"));
+    const indicator = document.querySelector<HTMLElement>("[data-toc-indicator]");
+    const headings = links
+      .map((link) => {
+        const id = decodeURIComponent(link.hash.slice(1));
+        const heading = document.getElementById(id);
+
+        return heading ? { heading, link } : undefined;
+      })
+      .filter((item) => item !== undefined);
+
+    if (headings.length === 0 || !indicator) return;
+
+    const updateActiveHeading = () => {
+      let activeIndexes = headings.flatMap(({ heading }, index) => {
+        const bounds = heading.getBoundingClientRect();
+        return bounds.top < window.innerHeight && bounds.bottom > 0 ? [index] : [];
+      });
+
+      if (activeIndexes.length === 0) {
+        let closestIndex = 0;
+        let closestDistance = Number.POSITIVE_INFINITY;
+
+        headings.forEach(({ heading }, index) => {
+          const distance = Math.abs(heading.getBoundingClientRect().top);
+          if (distance < closestDistance) {
+            closestIndex = index;
+            closestDistance = distance;
+          }
+        });
+
+        activeIndexes = [closestIndex];
+      }
+
+      const firstActiveLink = headings[activeIndexes[0]].link;
+      const lastActiveLink = headings[activeIndexes[activeIndexes.length - 1]].link;
+      const listBounds = firstActiveLink.closest("ol")?.getBoundingClientRect();
+      const firstBounds = firstActiveLink.getBoundingClientRect();
+      const lastBounds = lastActiveLink.getBoundingClientRect();
+
+      if (listBounds) {
+        indicator.style.top = `${firstBounds.top - listBounds.top}px`;
+        indicator.style.height = `${lastBounds.bottom - firstBounds.top}px`;
+        indicator.classList.remove("opacity-0");
+      }
+
+      headings.forEach(({ link }, index) => {
+        const isActive = activeIndexes.includes(index);
+        link.classList.toggle("text-accent-strong", isActive);
+        link.querySelector("[data-toc-marker]")?.classList.toggle("bg-accent", isActive);
+
+        if (index === activeIndexes[0]) link.setAttribute("aria-current", "location");
+        else link.removeAttribute("aria-current");
+      });
+    };
+
+    let frame = 0;
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateActiveHeading);
+    };
+
+    updateActiveHeading();
+    document.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate, { passive: true });
+
+    cleanupTableOfContents = () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+    };
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupTableOfContents, { once: true });
+  } else {
+    setupTableOfContents();
+  }
+
+  document.addEventListener("astro:page-load", setupTableOfContents);
+</script>

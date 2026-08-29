@@ -1,0 +1,38 @@
+---
+import PostCard from "@/components/content/PostCard.astro";
+import Card from "@/components/ui/Card.astro";
+import { getPostHref, type PostEntry } from "@/utils/posts";
+
+interface Props {
+  posts: readonly PostEntry[];
+  ariaLabel: string;
+  class?: string;
+  id?: string;
+  limit?: number;
+}
+
+const { posts, ariaLabel, class: className, id, limit = posts.length } = Astro.props;
+---
+
+<Card
+  as="ol"
+  class:list={["m-0 list-none divide-y divide-border overflow-hidden p-0", className]}
+  aria-label={ariaLabel}
+  data-limit={limit}
+  data-post-list
+  id={id}
+>
+  {
+    posts.map((post, index) => (
+      <li
+        data-post-list-item
+        data-post-path={getPostHref(post)}
+        data-published-at={post.data.publishedAt.getTime()}
+        data-view-count="0"
+        hidden={index >= limit}
+      >
+        <PostCard post={post} />
+      </li>
+    ))
+  }
+</Card>

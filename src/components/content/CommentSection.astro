@@ -1,0 +1,17 @@
+---
+import ArtalkComments from "@/components/content/ArtalkComments.astro";
+import { commentConfig } from "@/config/commentConfig";
+
+interface Props {
+  pageKey: string;
+  pageTitle: string;
+}
+
+const { pageKey, pageTitle } = Astro.props;
+---
+
+{
+  commentConfig.enabled && commentConfig.type === "artalk" && (
+    <ArtalkComments config={commentConfig.artalk} pageKey={pageKey} pageTitle={pageTitle} />
+  )
+}

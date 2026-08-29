@@ -1,0 +1,160 @@
+---
+import Footer from "@/components/layout/Footer.astro";
+import NavigationBar from "@/components/layout/NavigationBar.astro";
+import CommentViewCounts from "@/components/content/CommentViewCounts.astro";
+import { fontConfig } from "@/config/fontConfig";
+import { siteConfig } from "@/config/siteConfig";
+import "@/styles/global.css";
+import { resolveSiteAsset } from "@/utils/assets";
+import { getFontFaceCss, getFontFamily, getFontPreconnects } from "@/utils/fonts";
+import { normalizeSitePath } from "@/utils/paths";
+import { ClientRouter } from "astro:transitions";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: {
+    src: string;
+    width: number;
+    height: number;
+    alt: string;
+  };
+}
+
+const { title, description, ogImage } = Astro.props;
+const pageTitle = title ?? siteConfig.title;
+const pageDescription = description ?? siteConfig.description.join(" ");
+const canonicalPath = normalizeSitePath(Astro.url.pathname);
+const canonicalUrl = new URL(canonicalPath, siteConfig.siteUrl);
+const shouldRenderOpenGraph = siteConfig.generateOpenGraph && import.meta.env.PROD;
+let socialImage: {
+  url: URL;
+  width: number;
+  height: number;
+  alt: string;
+} | null = null;
+
+if (shouldRenderOpenGraph) {
+  if (ogImage) {
+    socialImage = {
+      url: new URL(ogImage.src, siteConfig.siteUrl),
+      width: ogImage.width,
+      height: ogImage.height,
+      alt: ogImage.alt,
+    };
+  } else {
+    const heroImage = resolveSiteAsset(siteConfig.heroImageLight) ?? resolveSiteAsset(siteConfig.heroImageDark);
+
+    if (!heroImage) {
+      throw new Error("A light or dark Hero image must be configured to generate social metadata.");
+    }
+
+    socialImage = {
+      url: new URL(heroImage.src, siteConfig.siteUrl),
+      width: heroImage.width,
+      height: heroImage.height,
+      alt: siteConfig.title,
+    };
+  }
+}
+
+const openGraphLocale = siteConfig.lang.replace("-", "_");
+const fontFamily = getFontFamily(fontConfig.font);
+const codeFontFamily = getFontFamily(fontConfig.codeFont);
+const configuredFonts = [...fontConfig.font, ...fontConfig.codeFont];
+const fontFaceCss = getFontFaceCss(configuredFonts);
+const fontPreconnects = getFontPreconnects(configuredFonts);
+const fontFamilyStyle = `--font-family: ${fontFamily}; --code-font-family: ${codeFontFamily}`;
+const faviconLinks = siteConfig.favicon.filter(({ src }) => src.trim());
+---
+
+<!doctype html>
+<html lang={siteConfig.lang} style={fontFamilyStyle}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content={pageDescription} />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#fdfdfc" data-theme-color-light="#fdfdfc" data-theme-color-dark="#1a1a1a" />
+    <link rel="canonical" href={canonicalUrl} />
+    {
+      shouldRenderOpenGraph && socialImage && (
+        <>
+          <meta property="og:type" content="website" />
+          <meta property="og:site_name" content={siteConfig.title} />
+          <meta property="og:title" content={pageTitle} />
+          <meta property="og:description" content={pageDescription} />
+          <meta property="og:url" content={canonicalUrl} />
+          <meta property="og:locale" content={openGraphLocale} />
+          <meta property="og:image" content={socialImage.url} />
+          <meta property="og:image:width" content={String(socialImage.width)} />
+          <meta property="og:image:height" content={String(socialImage.height)} />
+          <meta property="og:image:alt" content={socialImage.alt} />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={pageTitle} />
+          <meta name="twitter:description" content={pageDescription} />
+          <meta name="twitter:image" content={socialImage.url} />
+        </>
+      )
+    }
+    <script is:inline>
+      (() => {
+        const storageKey = "misthaven-theme";
+        let preference = "system";
+
+        try {
+          const storedPreference = localStorage.getItem(storageKey);
+          if (storedPreference === "light" || storedPreference === "dark") preference = storedPreference;
+        } catch {
+          // Keep following the system preference when storage is unavailable.
+        }
+
+        const theme =
+          preference === "system"
+            ? window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : preference;
+        const root = document.documentElement;
+        const themeColor = document.querySelector("meta[name='theme-color']");
+
+        root.dataset.themePreference = preference;
+        root.dataset.theme = theme;
+        root.style.colorScheme = theme;
+
+        if (themeColor) {
+          const color = theme === "dark" ? themeColor.dataset.themeColorDark : themeColor.dataset.themeColorLight;
+          if (color) themeColor.content = color;
+        }
+      })();
+    </script>
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={siteConfig.title}
+      href={new URL("rss.xml", siteConfig.siteUrl)}
+    />
+    {faviconLinks.map(({ src, sizes, rel, type }) => <link href={src.trim()} sizes={sizes} rel={rel} type={type} />)}
+    {fontPreconnects.map((href) => <link rel="preconnect" href={href} crossorigin="anonymous" />)}
+    {fontFaceCss && <style is:inline set:html={fontFaceCss} />}
+    <title>{pageTitle}</title>
+    <ClientRouter fallback="animate" />
+  </head>
+  <body>
+    <div class="min-h-screen">
+      <div class="flex min-h-screen flex-col">
+        <NavigationBar currentPath={Astro.url.pathname} />
+
+        <main
+          class="mx-auto mt-1 w-layout-width max-w-page flex-1 pb-12 tablet:mt-2 tablet:w-layout-width-tablet tablet:pb-16 wide:w-layout-width-wide"
+          data-page-content
+        >
+          <slot />
+        </main>
+        <Footer />
+      </div>
+    </div>
+    <CommentViewCounts />
+  </body>
+</html>

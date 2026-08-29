@@ -1,0 +1,36 @@
+---
+import Card from "@/components/ui/Card.astro";
+import { siteConfig } from "@/config/siteConfig";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getEntry, render } from "astro:content";
+
+const page = await getEntry("pages", "projects");
+
+if (!page) {
+  throw new Error("Missing content entry: src/content/pages/projects.md");
+}
+
+const { Content } = await render(page);
+
+const title = page.data.title ?? "项目";
+const description = page.data.description ?? siteConfig.description.join(" ");
+---
+
+<BaseLayout title={`${title} · ${siteConfig.title}`} description={description}>
+  <div class="mx-auto w-full max-w-reading">
+    <Card as="article" class="w-full overflow-hidden">
+      <header class="border-b border-border px-5 py-8 tablet:px-12 tablet:py-10">
+        <p class="m-0 text-xs font-bold text-accent-strong">PROJECTS</p>
+        <h1 class="mt-2 mb-0 text-page-title font-bold">{title}</h1>
+        {
+          description && (
+            <p class="mt-3 mb-0 text-sm text-muted">{description}</p>
+          )
+        }
+      </header>
+      <div class="prose-content px-5 py-8 tablet:px-12 tablet:py-10 tablet:pb-14">
+        <Content />
+      </div>
+    </Card>
+  </div>
+</BaseLayout>
