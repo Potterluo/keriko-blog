@@ -24,7 +24,7 @@ export const siteConfig = {
   owner: "Keriko",
 
   // 头像链接（位于 ./public/ 中的图片用绝对路径引用）
-  gravatarUrl: "/img/avatr.jpg",
+  gravatarUrl: "/img/avatr.png",
 
   // Favicon 配置，文件位置处于 ./public/ 中
   // rel 支持：icon、shortcut icon、apple-touch-icon、manifest
