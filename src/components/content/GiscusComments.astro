@@ -1,0 +1,71 @@
+---
+import Card from "@/components/ui/Card.astro";
+import { commentConfig } from "@/config/commentConfig";
+import { getTranslator, I18nKey } from "@/i18n";
+
+const t = getTranslator();
+const g = commentConfig.giscus;
+---
+
+<Card
+  as="section"
+  class="mt-5 px-5 py-7 tablet:mt-6 tablet:px-12 tablet:py-9"
+  aria-labelledby="comments-title"
+>
+  <h2 id="comments-title" class="m-0 text-lg font-bold">{t(I18nKey.commentsTitle)}</h2>
+  <div
+    class="mt-6"
+    data-giscus-container
+    data-giscus-repo={g.repo}
+    data-giscus-repo-id={g.repoId}
+    data-giscus-category={g.category}
+    data-giscus-category-id={g.categoryId}
+    data-giscus-mapping={g.mapping}
+    data-giscus-reactions-enabled={g.reactionsEnabled ? "1" : "0"}
+    data-giscus-input-position={g.inputPosition}
+    data-giscus-lang={g.lang}
+    data-giscus-loading={g.loading}
+  ></div>
+</Card>
+
+<script is:inline>
+  (() => {
+    const container = document.querySelector("[data-giscus-container]");
+    if (!container || container.dataset.loaded) return;
+    container.dataset.loaded = "true";
+
+    // 跟随站点当前主题（html[data-theme] 由 BaseLayout 初始化）
+    const currentTheme = () =>
+      document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+
+    // 配置来自 src/config/commentConfig.ts（模板层插值到 data-giscus-* 属性）
+    const script = document.createElement("script");
+    script.src = "https://giscus.app/client.js";
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    for (const attr of container.attributes) {
+      const match = /^data-giscus-(?!container$)(.+)$/.exec(attr.name);
+      if (match) {
+        // data-giscus-repo-id → dataset["repoId"]（dataset 键必须是 camelCase）
+        const key = match[1].replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        script.dataset[key] = attr.value;
+      }
+    }
+    script.dataset.theme = currentTheme();
+    container.appendChild(script);
+
+    // 主题切换时同步 giscus iframe（Misthaven 主题切换修改 html[data-theme]）
+    const observer = new MutationObserver(() => {
+      const frame = document.querySelector("iframe.giscus-frame");
+      if (!frame?.contentWindow) return;
+      frame.contentWindow.postMessage(
+        { giscus: { setConfig: { theme: currentTheme() } } },
+        "https://giscus.app",
+      );
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+  })();
+</script>

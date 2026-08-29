@@ -1,5 +1,6 @@
 ---
 import ArtalkComments from "@/components/content/ArtalkComments.astro";
+import GiscusComments from "@/components/content/GiscusComments.astro";
 import { commentConfig } from "@/config/commentConfig";
 
 interface Props {
@@ -14,4 +15,8 @@ const { pageKey, pageTitle } = Astro.props;
   commentConfig.enabled && commentConfig.type === "artalk" && (
     <ArtalkComments config={commentConfig.artalk} pageKey={pageKey} pageTitle={pageTitle} />
   )
+}
+
+{
+  commentConfig.enabled && commentConfig.type === "giscus" && <GiscusComments />
 }
