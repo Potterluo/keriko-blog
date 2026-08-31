@@ -39,12 +39,12 @@ description: 关于 Keriko：技术方向、开源项目与联系方式。
 
 ### 代表项目
 
-| 项目 | 简介 |
-|------|------|
-| [ClawPerf](https://github.com/Potterluo/ClawPerf) | LLM 服务 CLI 基准测试工具，用 pytest 框架构建，支持多并发、多场景压测 |
-| [KVCache-calculator](https://github.com/Potterluo/KVCache-calculator) | KV Cache 内存计算器，支持 MLA/GQA/Hybrid 等多种注意力机制，CLI 可视化输出 |
-| [docker-pull-tar](https://github.com/Potterluo/docker-pull-tar) | 纯 Shell 实现的镜像拉取工具，无需 Docker/Python，适合离线环境 |
-| [unified-cache-management](https://github.com/Potterluo/unified-cache-management) | LLM KV Cache 持久化与复用方案探索，跨请求、跨会话的缓存管理 |
+| 项目                                                                              | 简介                                                                      |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| [ClawPerf](https://github.com/Potterluo/ClawPerf)                                 | LLM 服务 CLI 基准测试工具，用 pytest 框架构建，支持多并发、多场景压测     |
+| [KVCache-calculator](https://github.com/Potterluo/KVCache-calculator)             | KV Cache 内存计算器，支持 MLA/GQA/Hybrid 等多种注意力机制，CLI 可视化输出 |
+| [docker-pull-tar](https://github.com/Potterluo/docker-pull-tar)                   | 纯 Shell 实现的镜像拉取工具，无需 Docker/Python，适合离线环境             |
+| [unified-cache-management](https://github.com/Potterluo/unified-cache-management) | LLM KV Cache 持久化与复用方案探索，跨请求、跨会话的缓存管理               |
 
 更多项目可以在我的 [GitHub](https://github.com/Potterluo) 找到，也可以在[项目页](/projects)查看完整列表。如果你在用其中任何一个，欢迎提 issue 或 PR，让我知道它帮到了你。
 
@@ -108,4 +108,4 @@ LLM 接触    vLLM / Transformers / KV Cache / Ascend NPU / FlashInfer
 
 ---
 
-> *"代码是暂时的，思想是永恒的。但写代码的过程，就是思考变成永恒的过程。"*
+> _"代码是暂时的，思想是永恒的。但写代码的过程，就是思考变成永恒的过程。"_

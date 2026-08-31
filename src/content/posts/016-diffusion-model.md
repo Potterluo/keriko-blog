@@ -1,7 +1,7 @@
 ---
 title: Diffusion Model 扩散模型学习笔记：从原理到应用
 description: Diffusion Model 扩散模型学习笔记：从原理到应用，配合李宏毅课程的理解整理
-publishedAt: '2026-04-05'
+publishedAt: "2026-04-05"
 category: 技术分享
 tags:
   - AI
@@ -17,6 +17,7 @@ draft: false
 在学习李宏毅老师的机器学习课程时，扩散模型（Diffusion Model）作为一个新兴的生成模型引起了我的浓厚兴趣。与传统的GAN（生成对抗网络）和VAE（变分自编码器）不同，扩散模型采用了一种独特的思路：通过模拟物理中的扩散过程来生成数据。
 
 扩散模型的概念源于物理学中的热力学扩散过程。简单来说，它通过两个核心步骤工作：
+
 - **前向过程（Forward Process）**：逐步向数据添加噪声，将清晰的数据"破坏"成纯噪声
 - **反向过程（Reverse Process）**：学习如何从噪声中逐步"恢复"出原始数据
 
@@ -31,6 +32,7 @@ draft: false
 $$x_t = \sqrt{1-\beta_t} \cdot x_{t-1} + \sqrt{\beta_t} \cdot \epsilon_t$$
 
 其中：
+
 - $x_t$ 是第 $t$ 步的 noisy 数据
 - $\beta_t$ 是噪声调度参数（schedule），控制每步添加的噪声量
 - $\epsilon_t$ 是从标准正态分布采样的噪声
@@ -70,6 +72,7 @@ $$L_{simple} = \mathbb{E}_{t,x_0,\epsilon}[\|\epsilon - \epsilon_\theta(x_t, t)\
 ### 3. 采样过程
 
 生成新图像时，我们：
+
 1. 从标准正态分布采样 $x_T$
 2. 使用训练好的网络预测噪声
 3. 根据预测的噪声计算 $x_{t-1}$
@@ -91,6 +94,7 @@ $$L_{simple} = \mathbb{E}_{t,x_0,\epsilon}[\|\epsilon - \epsilon_\theta(x_t, t)\
 ### 网络架构
 
 扩散模型通常使用 **U-Net** 作为骨干网络。U-Net的特点：
+
 - 编码器-解码器结构，适合图像到图像的任务
 - Skip connections保留细节信息
 - 可以融入时间步 $t$ 的信息（通过sinusoidal positional encoding）
@@ -100,6 +104,7 @@ $$L_{simple} = \mathbb{E}_{t,x_0,\epsilon}[\|\epsilon - \epsilon_\theta(x_t, t)\
 ### 噪声调度（Noise Schedule）
 
 噪声调度参数 $\beta_t$ 的选择很关键：
+
 - **线性调度**：$\beta_t$ 线性增长，简单但效果一般
 - **cosine调度**：更平滑的噪声添加，效果更好
 - 通常 $\beta_1 \approx 10^{-4}$，$\beta_T \approx 0.02$
@@ -111,6 +116,7 @@ $$L_{simple} = \mathbb{E}_{t,x_0,\epsilon}[\|\epsilon - \epsilon_\theta(x_t, t)\
 ### 1. 图像生成
 
 **DALL-E 2、Stable Diffusion、Imagen** 等知名模型都基于扩散模型。它们能够：
+
 - 文本到图像生成：根据文字描述生成高质量图像
 - 图像编辑：局部修改图像内容
 - 超分辨率：提升图像清晰度
@@ -132,12 +138,14 @@ $$L_{simple} = \mathbb{E}_{t,x_0,\epsilon}[\|\epsilon - \epsilon_\theta(x_t, t)\
 学习过程中，我总结了扩散模型的主要优势：
 
 **优势：**
+
 - 生成质量高，细节丰富
 - 训练稳定，不易出现mode collapse（相比GAN）
 - 数学理论清晰，可解释性强
 - 支持灵活的条件生成
 
 **挑战：**
+
 - 采样速度慢：需要数百步迭代
 - 计算资源消耗大
 - 调参有一定技巧
@@ -161,6 +169,7 @@ $$L_{simple} = \mathbb{E}_{t,x_0,\epsilon}[\|\epsilon - \epsilon_\theta(x_t, t)\
 ---
 
 **参考资源：**
+
 - 李宏毅机器学习课程：[Diffusion Model 讲解](https://www.youtube.com/watch?v=73q6ZdJ0p2E)
 - Ho et al. (2020): "Denoising Diffusion Probabilistic Models"
 - Nichol & Dhariwal (2021): "Improved Denoising Diffusion Probabilistic Models"

@@ -1,7 +1,7 @@
 ---
 title: API2MCP：把任意 API 变成 MCP 服务，统一管理
 description: API2MCP 将 REST API 统一封装为 MCP 服务，支持 Web 管理界面、多种认证、SSE 流式
-publishedAt: '2026-05-25'
+publishedAt: "2026-05-25"
 category: 技术分享
 tags:
   - MCP
@@ -66,13 +66,13 @@ API2MCP 基于 Python 生态构建：
 
 API2MCP 支持五种常见认证方式：
 
-| 认证类型 | 适用场景 |
-|---------|---------|
-| 无认证 | 公开 API（如部分天气查询） |
-| API Key | 大多数付费 API（OpenAI、各种 SaaS） |
-| Basic Auth | 企业内部服务、老系统接口 |
-| Token | JWT、自定义 Token 认证 |
-| OAuth | 社交平台、复杂授权场景 |
+| 认证类型   | 适用场景                            |
+| ---------- | ----------------------------------- |
+| 无认证     | 公开 API（如部分天气查询）          |
+| API Key    | 大多数付费 API（OpenAI、各种 SaaS） |
+| Basic Auth | 企业内部服务、老系统接口            |
+| Token      | JWT、自定义 Token 认证              |
+| OAuth      | 社交平台、复杂授权场景              |
 
 添加 API 时选择认证类型，填入凭证，后续调用自动处理认证逻辑。
 
@@ -87,6 +87,7 @@ POST http://localhost:8000/api/{api_name}
 ```
 
 传统 HTTP 调用，适合：
+
 - 非 AI 应用集成
 - 前端直接调用
 - 测试验证
@@ -98,6 +99,7 @@ http://localhost:8000/mcp/sse
 ```
 
 Server-Sent Events 方式的 MCP 端点，适合：
+
 - Claude Desktop、Cursor 等 MCP 客户端
 - 支持 SSE 的 AI 工具
 - 需要实时反馈的场景
@@ -105,6 +107,7 @@ Server-Sent Events 方式的 MCP 端点，适合：
 **MCP 标准输入输出**
 
 通过 stdin/stdout 运行 MCP 协议，适合：
+
 - 嵌入式集成
 - 不支持 SSE 的环境
 - 需要进程管理的场景
@@ -128,6 +131,7 @@ Server-Sent Events 方式的 MCP 端点，适合：
 - 错误详情
 
 日志可以帮助：
+
 - 排查问题
 - 分析 API 使用频率
 - 监控异常调用
@@ -294,5 +298,6 @@ API2MCP 解决了一个实际问题：**如何让 AI Agent 便捷地调用现有
 ---
 
 相关阅读：
+
 - [PrefixBench：LLM 上下文前缀基准测试工具](/posts/006-prefix-bench)
 - [MCP 协议入门指南](/posts/007-mcps2one)

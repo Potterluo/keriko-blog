@@ -7,11 +7,7 @@ const t = getTranslator();
 const g = commentConfig.giscus;
 ---
 
-<Card
-  as="section"
-  class="mt-5 px-5 py-7 tablet:mt-6 tablet:px-12 tablet:py-9"
-  aria-labelledby="comments-title"
->
+<Card as="section" class="mt-5 px-5 py-7 tablet:mt-6 tablet:px-12 tablet:py-9" aria-labelledby="comments-title">
   <h2 id="comments-title" class="m-0 text-lg font-bold">{t(I18nKey.commentsTitle)}</h2>
   <div
     class="mt-6"
@@ -25,7 +21,8 @@ const g = commentConfig.giscus;
     data-giscus-input-position={g.inputPosition}
     data-giscus-lang={g.lang}
     data-giscus-loading={g.loading}
-  ></div>
+  >
+  </div>
 </Card>
 
 <script is:inline>
@@ -35,8 +32,7 @@ const g = commentConfig.giscus;
     container.dataset.loaded = "true";
 
     // 跟随站点当前主题（html[data-theme] 由 BaseLayout 初始化）
-    const currentTheme = () =>
-      document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+    const currentTheme = () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
 
     // 配置来自 src/config/commentConfig.ts（模板层插值到 data-giscus-* 属性）
     const script = document.createElement("script");
@@ -58,10 +54,7 @@ const g = commentConfig.giscus;
     const observer = new MutationObserver(() => {
       const frame = document.querySelector("iframe.giscus-frame");
       if (!frame?.contentWindow) return;
-      frame.contentWindow.postMessage(
-        { giscus: { setConfig: { theme: currentTheme() } } },
-        "https://giscus.app",
-      );
+      frame.contentWindow.postMessage({ giscus: { setConfig: { theme: currentTheme() } } }, "https://giscus.app");
     });
     observer.observe(document.documentElement, {
       attributes: true,

@@ -1,7 +1,7 @@
 ---
 title: 聊聊我的开源项目们：LLM 基础设施方向的技术探索
 description: 回顾这几年在 LLM 基础设施方向的开源项目探索，从性能测试到镜像管理，从 KV Cache 优化到多用户系统，记录踩坑过程中的技术成长
-publishedAt: '2026-06-01'
+publishedAt: "2026-06-01"
 category: 项目笔记
 tags:
   - 开源
@@ -100,7 +100,7 @@ sync_tasks:
     images:
       - "vllm/vllm-openai:latest"
       - "huggingface/text-generation-inference:latest"
-    schedule: "0 2 * * *"  # 每天 2 点执行
+    schedule: "0 2 * * *" # 每天 2 点执行
     notify_webhook: "https://my-webhook/sync-complete"
 ```
 
@@ -150,12 +150,12 @@ kvcache-calc --architecture standard \
 
 支持多种架构：
 
-| 架构 | 特点 | 计算公式差异 |
-|------|------|-------------|
-| Standard | 传统注意力 | `2 × layers × heads × head_dim × seq_len` |
-| GQA | Grouped Query Attention | 头数按 KV group 计算，内存更省 |
-| MLA | Multi-Head Latent Attention | DeepSeek 的压缩方案，内存大幅降低 |
-| Hybrid | 混合架构 | 按比例组合不同 Attention |
+| 架构     | 特点                        | 计算公式差异                              |
+| -------- | --------------------------- | ----------------------------------------- |
+| Standard | 传统注意力                  | `2 × layers × heads × head_dim × seq_len` |
+| GQA      | Grouped Query Attention     | 头数按 KV group 计算，内存更省            |
+| MLA      | Multi-Head Latent Attention | DeepSeek 的压缩方案，内存大幅降低         |
+| Hybrid   | 混合架构                    | 按比例组合不同 Attention                  |
 
 ### 技术难点
 
@@ -310,14 +310,14 @@ users:
 
 这6个项目，看起来方向各异，但都围绕一个核心：**让 LLM 在生产环境中跑得更稳、更省、更方便。**
 
-| 项目 | 解决的问题 | 核心价值 |
-|------|-----------|---------|
-| ClawPerf | 性能测试难做 | CLI 基准测试，模拟真实负载 |
-| MirrorX | 镜像同步繁琐 | 自动化同步，WebUI 管理 |
-| KVCache-calculator-Skill | 内存评估靠猜 | 精确计算不同架构的内存占用 |
-| docker-pull-tar | 无 Docker 拉镜像 | 纯 shell 工具，断点续传 |
-| unified-cache-management | KV Cache 重复计算 | 持久化复用，降低延迟 |
-| MultiUserClaw | 多用户管理缺失 | 配额、权限、用量统计 |
+| 项目                     | 解决的问题        | 核心价值                   |
+| ------------------------ | ----------------- | -------------------------- |
+| ClawPerf                 | 性能测试难做      | CLI 基准测试，模拟真实负载 |
+| MirrorX                  | 镜像同步繁琐      | 自动化同步，WebUI 管理     |
+| KVCache-calculator-Skill | 内存评估靠猜      | 精确计算不同架构的内存占用 |
+| docker-pull-tar          | 无 Docker 拉镜像  | 纯 shell 工具，断点续传    |
+| unified-cache-management | KV Cache 重复计算 | 持久化复用，降低延迟       |
+| MultiUserClaw            | 多用户管理缺失    | 配额、权限、用量统计       |
 
 做这些项目的过程中，学到了很多：
 

@@ -1,7 +1,7 @@
 ---
 title: MCPS2ONE：用小模型给 MCP 工具瘦身，省下 90% 的 token
 description: MCPS2ONE 用小语言模型智能选择 MCP 工具，减少主模型的 token 消耗和上下文窗口占用
-publishedAt: '2026-06-02'
+publishedAt: "2026-06-02"
 category: 技术分享
 tags:
   - MCP
@@ -26,6 +26,7 @@ MCPS2ONE (MCP Service Selector) 的设计思路很直观：**让一个轻量的�
 这就像给大厨配了个助手。客人点菜后，助手先从几百种食材里选出相关的几样，再交给大厨处理。大厨不用每次都面对整仓库的食材清单，效率自然提升。
 
 核心技术选型：
+
 - 使用轻量小模型如 Qwen-1.5B、Phi-3-mini 作为选择代理
 - 这些小模型可以在本地运行，保护隐私且成本低
 - 仅将筛选后的工具定义传递给主模型
@@ -35,15 +36,19 @@ MCPS2ONE (MCP Service Selector) 的设计思路很直观：**让一个轻量的�
 MCPS2ONE 提供了四种工具选择策略，适应不同场景：
 
 ### 1. Keyword Strategy
+
 基于关键词匹配。简单快速，适合工具名称和描述明确、用户意图清晰的场景。比如用户说"帮我读取文件"，Keyword 策略会匹配包含 "read"、"file" 关键词的工具。
 
 ### 2. Semantic Strategy
+
 基于语义相似度。使用向量嵌入计算用户 query 与工具描述的语义距离。比关键词更智能，能理解"打开文档"和"读取文件"的语义关联。
 
 ### 3. LLM Strategy
+
 让小语言模型真正"理解"用户意图，从工具列表中做出选择。这是最智能的方式，小模型会分析 query 的上下文，选择最合适的工具组合。
 
 ### 4. Hybrid Strategy
+
 混合策略，结合上述多种方式。先用 Keyword 快速过滤，再用 Semantic 或 LLM 精选。兼顾速度和准确性。
 
 ## MCP Server 聚合

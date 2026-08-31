@@ -22,11 +22,7 @@ const description = page.data.description ?? siteConfig.description.join(" ");
       <header class="border-b border-border px-5 py-8 tablet:px-12 tablet:py-10">
         <p class="m-0 text-xs font-bold text-accent-strong">PROJECTS</p>
         <h1 class="mt-2 mb-0 text-page-title font-bold">{title}</h1>
-        {
-          description && (
-            <p class="mt-3 mb-0 text-sm text-muted">{description}</p>
-          )
-        }
+        {description && <p class="mt-3 mb-0 text-sm text-muted">{description}</p>}
       </header>
       <div class="prose-content px-5 py-8 tablet:px-12 tablet:py-10 tablet:pb-14">
         <Content />

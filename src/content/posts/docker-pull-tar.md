@@ -3,7 +3,7 @@ title: 我写了个 Docker 镜像拉取工具，不用装 Docker
 description: >-
   docker-pull-tar：一个无需 Docker/Python 环境的镜像拉取工具，支持断点续传、多架构、SHA256
   校验、并发下载，适合内网和离线部署场景
-publishedAt: '2026-03-15'
+publishedAt: "2026-03-15"
 category: 技术分享
 tags:
   - docker
@@ -39,14 +39,14 @@ draft: false
 
 这是一个纯 Shell + curl 的工具，直接从 Docker Registry 拉取镜像并打包成 tar 文件。核心特点：
 
-| 特性 | 说明 |
-|------|------|
-| ✅ 零依赖 | 不需要安装 Docker 或 Python，只要有 curl 和 shell 即可运行 |
-| ✅ 断点续传 | 传输中断后重新运行会自动继续，无需从头下载 |
-| ✅ 多架构支持 | 明确指定 amd64/arm64/v7 等架构，避免拉错镜像 |
-| ✅ SHA256 校验 | 下载完成后自动校验每个 layer 的完整性 |
-| ✅ 并发下载 | 多个 layer 同时下载，显著提升大镜像拉取速度 |
-| ✅ 私有仓库 | 支持 Basic Auth 认证的私有 Registry |
+| 特性           | 说明                                                       |
+| -------------- | ---------------------------------------------------------- |
+| ✅ 零依赖      | 不需要安装 Docker 或 Python，只要有 curl 和 shell 即可运行 |
+| ✅ 断点续传    | 传输中断后重新运行会自动继续，无需从头下载                 |
+| ✅ 多架构支持  | 明确指定 amd64/arm64/v7 等架构，避免拉错镜像               |
+| ✅ SHA256 校验 | 下载完成后自动校验每个 layer 的完整性                      |
+| ✅ 并发下载    | 多个 layer 同时下载，显著提升大镜像拉取速度                |
+| ✅ 私有仓库    | 支持 Basic Auth 认证的私有 Registry                        |
 
 项目开源在 GitHub：[Potterluo/docker-pull-tar](https://github.com/Potterluo/docker-pull-tar)，采用 MIT 许可证，可自由使用和修改。
 
@@ -98,10 +98,10 @@ draft: false
 实测效果：拉取一个 2GB 的镜像（12 个 layer）：
 
 | 并发数 | 下载耗时 |
-|--------|----------|
-| 1 | 12 分钟 |
-| 4 | 4 分钟 |
-| 8 | 2.5 分钟 |
+| ------ | -------- |
+| 1      | 12 分钟  |
+| 4      | 4 分钟   |
+| 8      | 2.5 分钟 |
 
 ### 断点续传
 
@@ -283,13 +283,13 @@ CI 环境不想装 Docker，只想缓存镜像。
 
 主流方案各有优劣，选择取决于场景：
 
-| 方案 | 运行依赖 | 断点续传 | 并发下载 | 多架构 | SHA256 校验 |
-|------|----------|----------|----------|--------|-------------|
-| `docker pull` + `docker save` | Docker daemon | ❌ | ✅ (内置) | ✅ | ✅ |
-| `skopeo copy` | skopeo 二进制 | ❌ | ✅ | ✅ | ✅ |
-| `crane pull` | crane (go容器) | ❌ | ✅ | ✅ | ✅ |
-| Python 脚本方案 | Python + libs | 部分 | ✅ | ✅ | ✅ |
-| **docker-pull-tar** | **curl + shell** | **✅** | **✅** | ✅ | ✅ |
+| 方案                          | 运行依赖         | 断点续传 | 并发下载  | 多架构 | SHA256 校验 |
+| ----------------------------- | ---------------- | -------- | --------- | ------ | ----------- |
+| `docker pull` + `docker save` | Docker daemon    | ❌       | ✅ (内置) | ✅     | ✅          |
+| `skopeo copy`                 | skopeo 二进制    | ❌       | ✅        | ✅     | ✅          |
+| `crane pull`                  | crane (go容器)   | ❌       | ✅        | ✅     | ✅          |
+| Python 脚本方案               | Python + libs    | 部分     | ✅        | ✅     | ✅          |
+| **docker-pull-tar**           | **curl + shell** | **✅**   | **✅**    | ✅     | ✅          |
 
 docker-pull-tar 不是要取代这些成熟的工具，而是在以下场景提供独特价值：
 

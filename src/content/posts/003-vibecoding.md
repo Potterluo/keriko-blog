@@ -1,7 +1,7 @@
 ---
 title: VibeCoding 实战：从 AI 实习生到 AI 善后工程师
 description: 探讨 VibeCoding 的核心理念：AI 是超级实习生，我们是善后工程师。通过黄金闭环和四维把控法，找到人机协作的最佳边界
-publishedAt: '2026-04-10'
+publishedAt: "2026-04-10"
 category: AI思考
 tags:
   - AI

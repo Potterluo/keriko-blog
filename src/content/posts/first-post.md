@@ -1,7 +1,7 @@
 ---
 title: 欢迎来到我的博客
 description: 这是我的第一篇博客文章，使用 Hugo 和 Blowfish 主题搭建
-publishedAt: '2026-03-08'
+publishedAt: "2026-03-08"
 category: 生活
 tags:
   - Hugo

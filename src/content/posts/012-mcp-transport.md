@@ -1,7 +1,7 @@
 ---
 title: 详解 MCP 传输机制：stdio、SSE 和 HTTP 怎么选？
 description: 对比 stdio、SSE、Streamable HTTP 三种 MCP 传输机制的适用场景与选型建议
-publishedAt: '2026-05-20'
+publishedAt: "2026-05-20"
 category: 技术分享
 tags:
   - MCP
@@ -17,6 +17,7 @@ MCP（Model Context Protocol）作为连接 AI 模型与外部工具的标准协
 MCP 的设计目标是让 AI 模型能够安全、高效地访问外部数据源和工具。传输层是 MCP 架构的基础，负责在客户端（通常是 AI 应用）和服务器（提供工具/数据的服务）之间传递 JSON-RPC 消息。
 
 选择合适的传输方式，直接影响系统的：
+
 - **部署复杂度**：本地工具 vs 远程服务
 - **性能表现**：延迟、吞吐量
 - **安全性**：进程隔离 vs 网络暴露
@@ -38,15 +39,15 @@ AI 应用 → stdin → MCP Server → stdout → AI 应用
 
 ```typescript
 // 客户端启动 MCP 服务器进程
-const serverProcess = spawn('my-mcp-server', [], {
-  stdio: ['pipe', 'pipe', 'pipe']
+const serverProcess = spawn("my-mcp-server", [], {
+  stdio: ["pipe", "pipe", "pipe"],
 });
 
 // 发送请求
-serverProcess.stdin.write(JSON.stringify(request) + '\n');
+serverProcess.stdin.write(JSON.stringify(request) + "\n");
 
 // 接收响应
-serverProcess.stdout.on('data', (data) => {
+serverProcess.stdout.on("data", (data) => {
   const response = JSON.parse(data.toString());
   // 处理响应
 });
@@ -77,6 +78,7 @@ serverProcess.stdout.on('data', (data) => {
 ### 实际案例
 
 Claude Code 使用 stdio 传输连接多个 MCP 服务器：
+
 - 文件系统服务器：读写本地文件
 - Git 服务器：执行 git 命令
 - 数据库服务器：连接本地数据库
@@ -86,6 +88,7 @@ Claude Code 使用 stdio 传输连接多个 MCP 服务器：
 ### 工作原理
 
 SSE（Server-Sent Events）是一种基于 HTTP 的单向推送技术。MCP 使用 SSE 实现双向通信：
+
 - **客户端→服务器**：通过 HTTP POST 发送请求
 - **服务器→客户端**：通过 SSE 连接推送响应和通知
 
@@ -100,33 +103,33 @@ AI 应用 ←──SSE连接──→ MCP Server
 **服务器端（Node.js）：**
 
 ```typescript
-import express from 'express';
+import express from "express";
 
 const app = express();
 
 // SSE 端点
-app.get('/sse', (req, res) => {
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  
+app.get("/sse", (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+
   // 保存连接，用于推送消息
   const clientId = generateId();
   connections.set(clientId, res);
-  
+
   // 发送 endpoint 事件，告知客户端 POST 地址
   res.write(`event: endpoint\ndata: /message?clientId=${clientId}\n\n`);
 });
 
 // 接收请求的 POST 端点
-app.post('/message', express.json(), (req, res) => {
+app.post("/message", express.json(), (req, res) => {
   const { clientId } = req.query;
   const connection = connections.get(clientId);
-  
+
   // 处理请求，通过 SSE 推送响应
-  handleRequest(req.body).then(response => {
+  handleRequest(req.body).then((response) => {
     connection.write(`event: message\ndata: ${JSON.stringify(response)}\n\n`);
   });
-  
+
   res.sendStatus(200);
 });
 ```
@@ -135,21 +138,21 @@ app.post('/message', express.json(), (req, res) => {
 
 ```typescript
 // 建立 SSE 连接
-const eventSource = new EventSource('http://server/sse');
+const eventSource = new EventSource("http://server/sse");
 
-eventSource.addEventListener('endpoint', (e) => {
+eventSource.addEventListener("endpoint", (e) => {
   postEndpoint = e.data; // 保存 POST 地址
 });
 
-eventSource.addEventListener('message', (e) => {
+eventSource.addEventListener("message", (e) => {
   const response = JSON.parse(e.data);
   // 处理响应
 });
 
 // 发送请求
 fetch(postEndpoint, {
-  method: 'POST',
-  body: JSON.stringify(request)
+  method: "POST",
+  body: JSON.stringify(request),
 });
 ```
 
@@ -216,16 +219,16 @@ AI 应用 ──HTTP POST──→ MCP Server
 
 ## 传输方式对比表
 
-| 特性 | stdio | SSE | HTTP |
-|------|-------|-----|------|
-| **通信模式** | 双向流 | SSE推送+POST | 请求-响应 |
-| **网络支持** | 仅本地 | 远程 | 远程 |
-| **实时性** | 最高 | 高 | 中（需轮询） |
-| **部署复杂度** | 低 | 中 | 低 |
-| **安全性** | 进程隔离 | 需认证+HTTPS | 需认证+HTTPS |
-| **资源开销** | 进程 | 长连接 | 无 |
-| **浏览器支持** | 否 | 是 | 是 |
-| **推送通知** | 支持 | 支持 | 不支持 |
+| 特性           | stdio    | SSE          | HTTP         |
+| -------------- | -------- | ------------ | ------------ |
+| **通信模式**   | 双向流   | SSE推送+POST | 请求-响应    |
+| **网络支持**   | 仅本地   | 远程         | 远程         |
+| **实时性**     | 最高     | 高           | 中（需轮询） |
+| **部署复杂度** | 低       | 中           | 低           |
+| **安全性**     | 进程隔离 | 需认证+HTTPS | 需认证+HTTPS |
+| **资源开销**   | 进程     | 长连接       | 无           |
+| **浏览器支持** | 否       | 是           | 是           |
+| **推送通知**   | 支持     | 支持         | 不支持       |
 
 ## 选型决策树
 
@@ -258,10 +261,12 @@ AI 应用 ──HTTP POST──→ MCP Server
 ### 安全注意事项
 
 **stdio**：
+
 - 验证服务器二进制来源
 - 限制服务器权限范围
 
 **SSE/HTTP**：
+
 - 启用 HTTPS 加密传输
 - 实现身份认证（API Key、OAuth）
 - 限制 CORS 来源
@@ -270,11 +275,13 @@ AI 应用 ──HTTP POST──→ MCP Server
 ## 总结
 
 MCP 的三种传输方式各有优势：
+
 - **stdio** 是本地工具的首选，零网络开销、部署简单
 - **SSE** 是远程服务的标准，支持实时推送、浏览器兼容
 - **HTTP** 是简单场景的备选，实现简单但缺乏实时性
 
 实际项目中，常见的组合是：
+
 - 本地工具用 stdio（如 Claude Code）
 - 远程服务用 SSE（如云端 MCP 服务器）
 

@@ -91,17 +91,17 @@ MCP 智能工具选择器。用小模型（Qwen-1.5B 等）智能筛选最相关
 
 ## 项目矩阵总览
 
-| 项目 | 类型 | 核心解决的问题 |
-|------|------|----------------|
-| ClawPerf | CLI 工具 | LLM 服务性能基准测试 |
-| KVCache-calculator | Web 工具 | KV Cache 内存计算 |
-| unified-cache-management | Python | KV Cache 持久化复用 |
-| PrefixBench | 数据集 | KV Cache 前缀复用性能评估 |
-| docker-pull-tar | Shell 工具 | 无 Docker 环境拉取镜像 |
-| MirrorX | 系统 | 容器镜像同步管理 |
-| API2MCP | API 工具 | REST API 转 MCP 封装 |
-| MCPS2ONE | 智能筛选 | MCP 工具 token 优化 |
-| MultiUserClaw | Bot | 多用户 LLM 聊天 |
+| 项目                     | 类型       | 核心解决的问题            |
+| ------------------------ | ---------- | ------------------------- |
+| ClawPerf                 | CLI 工具   | LLM 服务性能基准测试      |
+| KVCache-calculator       | Web 工具   | KV Cache 内存计算         |
+| unified-cache-management | Python     | KV Cache 持久化复用       |
+| PrefixBench              | 数据集     | KV Cache 前缀复用性能评估 |
+| docker-pull-tar          | Shell 工具 | 无 Docker 环境拉取镜像    |
+| MirrorX                  | 系统       | 容器镜像同步管理          |
+| API2MCP                  | API 工具   | REST API 转 MCP 封装      |
+| MCPS2ONE                 | 智能筛选   | MCP 工具 token 优化       |
+| MultiUserClaw            | Bot        | 多用户 LLM 聊天           |
 
 ---
 

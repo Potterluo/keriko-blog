@@ -1,7 +1,7 @@
 ---
 title: 读 Nano-vLLM 源码：一个极简 LLM 推理引擎是如何工作的
 description: 通过阅读 nanovllm 源码，理解 LLM 推理引擎的核心架构：调度器、KV Cache 块管理、模型执行流程
-publishedAt: '2026-06-03'
+publishedAt: "2026-06-03"
 category: 技术分享
 tags:
   - LLM
@@ -121,6 +121,7 @@ class Scheduler:
 这是 vLLM 的核心创新——将 KV Cache 组织为固定大小的"块"（Block），类似操作系统的虚拟内存管理。
 
 每个 Block 存储固定数量的 token 的 KV Cache：
+
 - **物理块**：实际存储 KV Cache 的内存块
 - **逻辑块**：Sequence 的逻辑视图，映射到物理块
 - **引用计数**：支持共享前缀（如 system prompt）
@@ -149,6 +150,7 @@ class BlockManager:
 ```
 
 这种设计带来的优势：
+
 - **内存效率**：按需分配，避免预分配浪费
 - **共享前缀**：多个请求共享相同 prompt 时，只存储一份 KV Cache
 - **抢占恢复**：可以换出整块 KV Cache，稍后恢复

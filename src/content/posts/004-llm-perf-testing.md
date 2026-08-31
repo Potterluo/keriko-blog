@@ -1,7 +1,7 @@
 ---
 title: LLM 推理性能测试：用 pytest 做自动化基准测试
 description: 介绍如何使用 pytest 构建 LLM 推理性能自动化测试框架，包括 YAML 配置管理、数据库集成、HTML 报告生成等核心功能
-publishedAt: '2026-05-08'
+publishedAt: "2026-05-08"
 category: 技术分享
 tags:
   - LLM
@@ -66,8 +66,8 @@ test_params:
   concurrent: [1, 4, 8, 16]
 
 thresholds:
-  latency_p99: 500  # ms
-  throughput_min: 50  # tokens/s
+  latency_p99: 500 # ms
+  throughput_min: 50 # tokens/s
 
 # config/ascend.yaml
 extends: base.yaml
@@ -75,7 +75,7 @@ platform:
   type: "ascend"
   device: "npu"
   count: 8
-  memory: 64  # GB
+  memory: 64 # GB
 
 # config/cuda.yaml
 extends: base.yaml
@@ -83,7 +83,7 @@ platform:
   type: "cuda"
   device: "gpu"
   count: 4
-  memory: 80  # GB
+  memory: 80 # GB
 ```
 
 通过 `extends` 机制实现配置继承，避免重复定义。测试启动时根据 `--platform` 参数自动加载对应配置：
@@ -556,14 +556,14 @@ pytest --platform cuda \
 
 这套 pytest 性能测试框架的核心优势：
 
-| 特性 | 实现方式 | 价值 |
-|------|----------|------|
-| **参数化测试** | `@pytest.mark.parametrize` | 自动覆盖多参数组合 |
-| **多维标记** | 自定义 markers | 按阶段/功能/平台筛选 |
-| **变量采集** | `@export_vars` 装饰器 | 自动导出到数据库 |
-| **配置管理** | YAML + extends | 分层管理平台配置 |
-| **平台适配** | PlatformAdapter | 统一 Ascend/CUDA 接口 |
-| **报告生成** | pytest-html + 定制 | 可视化性能摘要 |
+| 特性           | 实现方式                   | 价值                  |
+| -------------- | -------------------------- | --------------------- |
+| **参数化测试** | `@pytest.mark.parametrize` | 自动覆盖多参数组合    |
+| **多维标记**   | 自定义 markers             | 按阶段/功能/平台筛选  |
+| **变量采集**   | `@export_vars` 装饰器      | 自动导出到数据库      |
+| **配置管理**   | YAML + extends             | 分层管理平台配置      |
+| **平台适配**   | PlatformAdapter            | 统一 Ascend/CUDA 接口 |
+| **报告生成**   | pytest-html + 定制         | 可视化性能摘要        |
 
 通过这套框架，我们可以：
 
