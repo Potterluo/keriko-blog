@@ -1,11 +1,12 @@
-import type { CommentConfig } from "@/types/commentConfig";
+import type { CommentConfig, CommentProvider } from "@/types/commentConfig";
 
 export const commentConfig = {
   // 评论系统总开关
   enabled: true,
 
   // 评论系统类型；giscus 基于 GitHub Discussions，需要仓库公开并安装 giscus App
-  type: "giscus",
+  // 显式拓宽为联合类型，保留与提供方分支（artalk）的可比性
+  type: "giscus" as CommentProvider,
 
   artalk: {
     // Artalk 后端 API 地址；启用评论前请填写
