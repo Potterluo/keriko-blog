@@ -19,7 +19,7 @@ draft: false
 
 ## 多 rank 现场：一份缓存，N 个消费者
 
-UCM（Unified Cache Manager）把 KV Cache 定义成等大的小段，每段叫一个 **shard（分片）**。定位一个分片需要两个量：块 ID（16 字节内容哈希）加块内分片序号，`(block, shard)` 就是缓存的键。主机内存里那层缓存由固定数量的**槽位（node / slot）**组成，槽位满了要装新分片时按某种策略挑一个旧槽位腾出来。
+UCM（Unified Cache Manager）把 KV Cache 定义成等大的小段，每段叫一个 **shard（分片）**。定位一个分片需要两个量：块 ID（16 字节内容哈希）加块内分片序号，`(block, shard)` 就是缓存的键。主机内存里那层缓存由固定数量的**槽位（node / slot**）组成，槽位满了要装新分片时按某种策略挑一个旧槽位腾出来。
 
 多卡节点上，节点内卡数就是 `localRankSize`。关键设计是节点内各 rank 共享**同一份** `TransBuffer`：控制面（哈希桶、桶锁、节点锁、引用计数、状态位、淘汰游标）和数据面（真正的字节）都在同一块 POSIX 共享内存里。
 
