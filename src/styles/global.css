@@ -151,7 +151,7 @@
   --container-page: 100rem;
   --container-chrome: 109rem;
   --container-reading: 65rem;
-  --container-post: 60rem;
+  --container-post: 56rem;
 
   --spacing-layout-width: calc(100% - 2rem);
   --spacing-layout-width-tablet: calc(100% - 3rem);
