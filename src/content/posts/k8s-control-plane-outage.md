@@ -15,11 +15,11 @@ tags:
 draft: false
 ---
 
-今天下午集群出了一个大状况：**整个 Kubernetes 控制平面全面瘫痪，三台 Master 中有两台失联，etcd 集群丢失 Quorum，Harbor 镜像仓库不可用，大量业务 Pod 陷入 ImagePullBackOff 与 CrashLoopBackOff。**
+今天下午集群出了一个大状况：整个 Kubernetes 控制平面全面瘫痪，三台 Master 中有两台失联，etcd 集群丢失 Quorum，Harbor 镜像仓库不可用，大量业务 Pod 陷入 ImagePullBackOff 与 CrashLoopBackOff。
 
-经过约 6 小时的紧急恢复，集群最终以单节点 etcd 模式恢复服务，**数据完整保留**，业务逐步自愈。
+经过约 6 小时的紧急恢复，集群最终以单节点 etcd 模式恢复服务，数据完整保留，业务逐步自愈。
 
-之所以现在才写，是因为故障当时我们手头只有"层层向下"的现象，没有最上游的证据。根因是拿到 etcd 日志、DB SIZE 和磁盘数据之后才确定的。这份复盘按"现象 → 排查 → 根因 → 放大 → 止损 → 恢复 → 加固"的顺序记录，命令都保留原样，便于以后再遇到时直接照做。
+之所以现在才写，是因为故障当时我们手头只有"层层向下"的现象，没有最上游的证据。根因是拿到 etcd 日志、DB SIZE 和磁盘数据之后才确定的。命令都保留原样，便于以后再遇到时直接照做。
 
 ## 事故概要
 
@@ -29,8 +29,8 @@ draft: false
 | 恢复时长     | 约 6 小时                                                                                 |
 | 影响范围     | 控制平面全面不可用；Harbor 502；大量 Pod ImagePullBackOff / CrashLoopBackOff；Ingress 502 |
 | 直接现象     | HAProxy 后端池为空、`kubectl` 挂起、所有经 VIP 的 API 请求返回 EOF                        |
-| 根本原因     | etcd 集群丢失 Quorum（master-1 物理失联 + **master-3 数据目录被误操作污染**）             |
-| 数据结果     | **完整保留**，以单节点 etcd 模式恢复服务                                                  |
+| 根本原因     | etcd 集群丢失 Quorum（master-1 物理失联 + master-3 数据目录被误操作污染）                 |
+| 数据结果     | 完整保留，以单节点 etcd 模式恢复服务                                                      |
 | 最严重的教训 | 故障排查期间引入新变更（`--force-new-cluster`），把"可恢复"变成了"险些不可恢复"           |
 
 ## 现场：一条看起来毫无杀伤力的报错
@@ -42,19 +42,19 @@ Failed to get resource usage history: error querying CPU usage:
 Post "https://141.111.32.128:8443/api/v1/namespaces/monitoring/services/prometheus-kube-prometheus-prometheus:9090/proxy/api/v1/query_range": EOF
 ```
 
-把这条 URL 拆开看，它其实说清楚了请求链路：
+把这条 URL 拆开看，它说清楚了请求链路：
 
-- `141.111.32.128:8443` —— 集群控制平面的对外 VIP（Keepalived + HAProxy）；
-- `/api/v1/namespaces/monitoring/services/.../proxy/...` —— 这是 **kube-apiserver 的 service proxy 转发**，不是直连 Prometheus；
-- 结尾的 `EOF` —— 连接在数据传输完成前被对端关闭。
+- `141.111.32.128:8443` 是集群控制平面的对外 VIP（Keepalived + HAProxy）；
+- `/api/v1/namespaces/monitoring/services/.../proxy/...` 是 kube-apiserver 的 service proxy 转发，不是直连 Prometheus；
+- 结尾的 `EOF` 表示连接在数据传输完成前被对端关闭。
 
-注意第三点：EOF 不是 HTTP 状态码，也不是 Prometheus 返回的错误，它意味着**根本没走到 Prometheus**。这条报错的位置和真正的故障点之间，隔了整整三层。
+注意第三点：EOF 不是 HTTP 状态码，也不是 Prometheus 返回的错误，它意味着请求根本没走到 Prometheus。这条报错的位置和真正的故障点之间，隔了整整三层。
 
 ## 排查：三次层级下探
 
 ### 第一层：业务组件
 
-第一反应是教科书式的标准答案——Prometheus Service 没有就绪端点，kube-proxy 接受连接后立即挂断，客户端看到 EOF。于是照方抓药：
+第一反应是教科书式的标准答案：Prometheus Service 没有就绪端点，kube-proxy 接受连接后立即挂断，客户端看到 EOF。于是照方抓药：
 
 ```bash
 kubectl get endpoints prometheus-kube-prometheus-prometheus -n monitoring
@@ -74,7 +74,7 @@ haproxy[2759847]:backend k8s_backend has no server available!
 Unable to connect to the server: EOF
 ```
 
-这两行 HAProxy 告警比之前所有推理都更有信息量。`kubectl` 是访问 apiserver 最基础的工具，它挂住意味着：**故障点不在 Prometheus，甚至不在代理逻辑，而在于"我们连不上 apiserver"这件事本身。** 当两个不相关的客户端同时坏在同一段链路上，故障点就在这段链路上。
+这两行 HAProxy 告警比之前所有推理都更有信息量。`kubectl` 是访问 apiserver 最基础的工具，它挂住说明我们连不上 apiserver，问题已经不在 Prometheus，也不在代理层。两个不相关的客户端同时坏在同一段链路上，故障点就在这段链路上。
 
 ### 第二层：控制平面入口
 
@@ -102,9 +102,9 @@ backend k8s_backend
 k8s_frontend k8s_backend/<NOSRV> -1/-1/0 0 SC 1/1/0/0/0 0/0
 ```
 
-两个关键标记：`<NOSRV>` 表示请求没有落到任何后端；`SC` 表示 Server Connection failure。而配置里用的是 `option tcp-check`，**这是纯 TCP 层探活**——它失败的含义是"三台 master 的 6443 连 TCP 都建立不起来"，而不是"HTTP 健康检查返回非 200"。后端不是"不健康"，是"不存在"。
+两个关键标记：`<NOSRV>` 表示请求没有落到任何后端；`SC` 表示 Server Connection failure。配置里用的是 `option tcp-check`，这是纯 TCP 层探活，它失败意味着三台 master 的 6443 连 TCP 都建立不起来，与 HTTP 健康检查返回非 200 无关。后端根本不存在，谈不上"不健康"。
 
-顺带记一笔：HAProxy 已连续运行 3 个月 27 天，**故障前它自己没有任何异常**，它只是一个忠实反映下游状态的旁观者。
+顺带记一笔：HAProxy 已连续运行 3 个月 27 天，故障前它自己没有任何异常，只是一个反映下游状态的旁观者。
 
 绕开 HAProxy，逐个直连 master 的 apiserver：
 
@@ -122,7 +122,7 @@ curl -k --max-time 3 https://141.111.33.55:6443/healthz   # master-1
 | 141.111.34.31         | `Connection refused` | master-3 的 apiserver 同样没有监听              |
 | 141.111.33.55         | `No route to host`   | master-1 主机层面就不可达，疑似宕机或网络层断裂 |
 
-`refused` 说明主机活着、只是服务没了；`no route to host` 说明主机或链路本身有问题。**这两个词的区别，直接决定了后面要不要去查物理机。**
+`refused` 说明主机活着、只是服务没了；`no route to host` 说明主机或链路本身有问题。这两个词的区别，决定了后面要不要去查物理机。
 
 ### 第三层：组件运行时
 
@@ -143,7 +143,7 @@ e6295cb9e4a18  ...  19 minutes ago  Running  kube-scheduler           37
 2a28b1c1a7df3  ...  3 minutes ago   Exited   calico-kube-controllers  22
 ```
 
-这张表是整场排查里信息密度最高的一段。**重启次数的量级直接暴露了故障的持续时间**：controller-manager 98→99、scheduler 36→37、calico 22 次——这不是"某个组件偶发重启"，而是一个已经持续很久的**崩溃重启循环**。而 etcd 和 kube-apiserver 的 8→9 说明它们正处在最前排崩溃。
+这张表是整场排查里信息密度最高的一段。重启次数的量级直接暴露了故障的持续时间：controller-manager 98→99、scheduler 36→37、calico 22 次。这已经是一个持续很久的崩溃重启循环，不只是某个组件偶发重启。etcd 和 kube-apiserver 的 8→9 说明它们正处在最前排崩溃。
 
 与此同时 kubelet 在疯狂重试，注意两个细节：
 
@@ -153,9 +153,9 @@ Trace[802531992]: "Reflector ListAndWatch" name:object-"jenkins-test"/"kube-root
 ---"Objects listed" error:Get "https://141.111.32.128:8443/api/v1/namespaces/...": EOF
 ```
 
-kubelet 是通过 **VIP `141.111.32.128:8443`** 而不是本机 `127.0.0.1:6443` 访问 apiserver 的（HA 部署下的正常配置），而且每次 list 要耗 **36 秒**才超时失败。这意味着每个节点上的每个控制器都在以 36 秒为单位堆积失败请求，**整个集群的协调能力归零**。
+kubelet 是通过 VIP `141.111.32.128:8443` 访问 apiserver 的（HA 部署下的正常配置），不走本机 `127.0.0.1:6443`，而且每次 list 要耗 36 秒才超时失败。每个节点上的每个控制器都在以 36 秒为单位堆积失败请求，整个集群的协调能力归零。
 
-排查到此，层级已经从"业务组件"下探到"etcd"，接下来要回答的是：etcd 为什么会崩。
+排查到此，层级已经从"业务组件"下探到"etcd"，剩下的问题是：etcd 为什么会崩。
 
 ## 根因：三个条件同时成立
 
@@ -164,20 +164,20 @@ _从物理失联和误操作，到最初的 Prometheus 报错：每一层都是�
 
 ### 1. master-1 物理失联
 
-master-1（`141.111.33.55`）返回 `No route to host`，主机层面不可达。三节点 etcd 集群因此只剩两票可用——**这已经踩在 Quorum 的边界上**（3 节点需要 2 票）。此时集群还能工作，但已经没有任何容错余量。
+master-1（`141.111.33.55`）返回 `No route to host`，主机层面不可达。三节点 etcd 集群因此只剩两票可用，这已经踩在 Quorum 的边界上（3 节点需要 2 票）。此时集群还能工作，但已经没有任何容错余量。
 
 ### 2. master-3 的 etcd 数据被污染（最严重）
 
-在排查过程中，有人在 master-3 上使用 `--force-new-cluster` 或 `--initial-cluster-state=new` 启动了一个新的 etcd 集群，**污染了原有的数据目录**。
+在排查过程中，有人在 master-3 上使用 `--force-new-cluster` 或 `--initial-cluster-state=new` 启动了一个新的 etcd 集群，污染了原有的数据目录。
 
-这是整场事故里最严重的一步。它的破坏力不在于"多起了一个进程"，而在于：
+这是整场事故里最严重的一步。破坏力来自两点：
 
-- 原集群的成员信息和数据一致性被破坏，**丧失了原地恢复的可能性**；
-- 如果此时 master-2 的 etcd 仍在运行，会形成**双集群冲突风险**——两个自认为独立的集群持有不同的数据版本，后续无论以哪边为准都存在分歧。
+- 原集群的成员信息和数据一致性被破坏，丧失了原地恢复的可能性；
+- 如果此时 master-2 的 etcd 仍在运行，会形成双集群冲突风险：两个自认为独立的集群持有不同的数据版本，后续无论以哪边为准都存在分歧。
 
 ### 3. 结果：Quorum 丢失
 
-master-1 失联 + master-3 数据被污染，三节点集群只剩 master-2 一个健康节点，**无法形成多数派**，etcd 拒绝提供服务并陷入重启循环。剩下的链条就是纯机械的连锁反应：
+master-1 失联 + master-3 数据被污染，三节点集群只剩 master-2 一个健康节点，无法形成多数派，etcd 拒绝提供服务并陷入重启循环。剩下的链条就是纯机械的连锁反应：
 
 ```text
 etcd 反复退出（退出码 8 → 9）
@@ -189,7 +189,7 @@ etcd 反复退出（退出码 8 → 9）
             → 我们看到的：面板查询 CPU 历史失败
 ```
 
-**最初那条 Prometheus 报错，是这条链最末端的涟漪。** Prometheus 一直是好的，HAProxy 是无辜的，面板只是最先喊出来的那个人。
+最初那条 Prometheus 报错，是这条链最末端的涟漪。Prometheus 一直是好的，HAProxy 是无辜的，面板只是最先喊出来的那一个。
 
 ## 为什么影响面被放大
 
@@ -197,13 +197,13 @@ etcd 反复退出（退出码 8 → 9）
 
 ### VIP 漂移到了故障节点
 
-Keepalived 的 VIP `141.111.32.128` 漂移到了 master-3，**而 master-3 的 apiserver 已经挂了**。同时 HAProxy 仍把 master-1/3 放在后端池里。结果是集群入口指向了一个没有服务的节点，流量被转发到无服务处，可用性进一步恶化。
+Keepalived 的 VIP `141.111.32.128` 漂移到了 master-3，而 master-3 的 apiserver 已经挂了。同时 HAProxy 仍把 master-1/3 放在后端池里。结果是集群入口指向了一个没有服务的节点，流量被转发到无服务处，可用性进一步恶化。
 
-根子在于：**Keepalived 的 VIP 归属没有与 apiserver 健康检查联动**。它只知道"master-3 这台机器活着"，不知道"master-3 上的 apiserver 已经死了"。
+根子在于 Keepalived 的 VIP 归属没有与 apiserver 健康检查联动：它只知道 master-3 这台机器活着，不知道 master-3 上的 apiserver 已经死了。
 
 ### 幽灵 Pod
 
-大量 Pod 显示 `Running`，但 `kubectl exec` 报 `container not found`——**Pod 状态说有容器，节点上其实没有，也就是"幽灵 Pod"**。
+大量 Pod 显示 `Running`，但 `kubectl exec` 报 `container not found`：Pod 状态说有容器，节点上其实没有，也就是"幽灵 Pod"。
 
 原因是控制平面故障期间 kubelet 与 apiserver 断连，容器被终止了，但状态没有同步回来。
 
@@ -219,11 +219,11 @@ Harbor 依赖 Redis 维持会话
         → 而修复这些 Pod 又需要 Harbor 正常……
 ```
 
-依赖链是：**Harbor → Redis → etcd/apiserver 维持 Pod 状态**。控制平面一挂，镜像仓库跟着挂；镜像仓库一挂，所有 Pod 都无法重建——包括那些本来能自愈的。这就是"控制平面是生命线"这句话的具体含义。
+依赖链是 Harbor → Redis → etcd/apiserver 维持 Pod 状态。控制平面一挂，镜像仓库跟着挂；镜像仓库一挂，所有 Pod 都无法重建，包括那些本来能自愈的。
 
 ## 止损：先备份，再动手
 
-这一节是整场恢复的分水岭。**在动手之前，先把"退路"准备好。**
+这一节是整场恢复的分水岭：动手之前，先把退路准备好。
 
 ```bash
 # 1. 停止 master-3 上所有 etcd 相关操作，避免继续污染数据
@@ -252,17 +252,17 @@ ETCDCTL_API=3 etcdctl \
 # DB SIZE 423MB —— 数据完整，未丢失
 ```
 
-顺序很重要：**先隔离故障节点（master-3），再抢回入口（VIP），最后才动 master-2 的数据。** 反过来做，就等于在一个还有干扰源的环境里做恢复。
+顺序很重要：先隔离故障节点（master-3），再抢回入口（VIP），最后才动 master-2 的数据。反过来做，就等于在一个还有干扰源的环境里做恢复。
 
-> 补一句小提醒：etcd 3.4 之后 `ETCDCTL_API=3` 已是废弃环境变量（默认就是 v3），新集群里可以省略。本文保留它只是为了和现场命令一致。
+> 注：etcd 3.4 之后 `ETCDCTL_API=3` 已是废弃环境变量（默认就是 v3），新集群里可以省略。这里保留它只是为了和现场命令一致。
 
-拿到 `DB SIZE 423MB` 这个数字，是整场恢复中最关键的一次确认：**数据在，只是集群起不来**。于是恢复策略从"重建集群"变成了"让现有数据重新成为单节点集群"，代价从"丢数据"降到了"暂时失去 HA"。
+拿到 `DB SIZE 423MB` 这个数字，是整场恢复里最关键的一次确认：数据在，只是集群起不来。恢复策略因此从"重建集群"变成"让现有数据重新成为单节点集群"，代价从"丢数据"降到"暂时失去 HA"。
 
 ## 恢复：单节点 etcd 重建
 
 ### 先回答一个问题：同一个 `--force-new-cluster`，为什么这次是对的？
 
-这是整场事故里最值得记下来的一点。**完全相同的参数，在 master-3 上是灾难，在 master-2 上是解药。差别不在命令，在前置条件。**
+这是整场事故里最值得记下来的一点。完全相同的参数，在 master-3 上是灾难，在 master-2 上是解药，差别在前置条件。
 
 | 前置条件     | master-3（误操作，造成污染）       | master-2（恢复，正确）                     |
 | :----------- | :--------------------------------- | :----------------------------------------- |
@@ -272,7 +272,7 @@ ETCDCTL_API=3 etcdctl \
 | 操作目的     | 排查试探                           | 明确的灾难恢复手段                         |
 | 结果         | 数据目录被污染，丧失原地恢复可能性 | 单节点集群拉起，数据完整保留               |
 
-结论：`--force-new-cluster` **不是"危险参数"，而是"有严格前置条件的高危操作"**。前置条件没满足就执行，它的破坏力比故障本身更大。**故障排查期间禁止引入新变更**，这条纪律是用一次数据污染换来的。
+结论：`--force-new-cluster` 是有严格前置条件的高危操作，不是"危险参数"四个字能概括的。前置条件没满足就执行，它的破坏力比故障本身更大。故障排查期间禁止引入新变更，这条是用一次数据污染换来的。
 
 ### 4.1 修改 etcd 静态 Pod 清单
 
@@ -288,7 +288,7 @@ vi /etc/kubernetes/manifests/etcd.yaml
 - --initial-cluster=master-2=https://141.111.33.31:2380
 ```
 
-**注意**：`--initial-cluster-state` 必须为 `new`，不能是 `existing`，否则 etcd 会尝试按旧配置去连接已经不存在的集群成员。
+`--initial-cluster-state` 必须为 `new`，不能是 `existing`，否则 etcd 会尝试按旧配置去连接已经不存在的集群成员。
 
 ### 4.2 停止 kubelet，清掉残留容器
 
@@ -346,7 +346,7 @@ sleep 30
 crictl ps | grep etcd
 ```
 
-因为残留成员已经被移除，"当前节点"就是这个集群唯一的成员，所以去掉 `--force-new-cluster` 后 etcd 仍能正常启动。**这一步是验证"新集群是否真的自洽"的关键**——如果去掉参数后 etcd 起不来，说明成员关系还没清干净，此时绝不能继续往下走。
+因为残留成员已经被移除，"当前节点"就是这个集群唯一的成员，所以去掉 `--force-new-cluster` 后 etcd 仍能正常启动。这一步也在验证新集群是否真的自洽：如果去掉参数后 etcd 起不来，说明成员关系还没清干净，此时不能继续往下走。
 
 ### 4.6 控制平面自动重建
 
@@ -358,7 +358,7 @@ curl -k https://127.0.0.1:6443/healthz   # 期望: ok
 kubectl get nodes
 ```
 
-`kubectl get nodes` 正常输出，**且所有 K8s 对象都在**——这确认了第 4 节的判断：数据完整，集群只是"起不来"，不是"没了"。
+`kubectl get nodes` 正常输出，且所有 K8s 对象都在，这确认了第 4 节的判断：数据完整，集群只是起不来，不是没了。
 
 ## 幽灵 Pod：重启 kubelet，而不是删 Pod
 
@@ -370,7 +370,7 @@ kubectl exec -n redis-system redis-master-0 -- ps aux 2>&1 | head -3
 # 报 container not found，确认是幽灵 Pod
 ```
 
-**处理方法：逐节点重启 kubelet，让它用本地镜像缓存重建容器，不需要从 Harbor 拉取。**
+处理方法是逐节点重启 kubelet，让它用本地镜像缓存重建容器，不需要从 Harbor 拉取。
 
 ```bash
 # 一次只重启一台，避免同时中断过多业务
@@ -390,7 +390,7 @@ sleep 30
 crictl ps | grep -E "harbor|redis"
 ```
 
-为什么不能反过来"删 Pod 让它重建"？因为在 Harbor 还没恢复的时候删 Pod，新 Pod 会因为拉不到镜像直接陷入 `ImagePullBackOff`，**把"状态不一致"变成"真的没有服务"**，故障就从可自愈变成了不可自愈。这个坑我们踩了一次，记住这个顺序：**先修节点上的容器（重启 kubelet），再处理 Pod 对象。**
+在 Harbor 还没恢复的时候删 Pod，新 Pod 会因为拉不到镜像直接陷入 `ImagePullBackOff`，状态不一致就变成真的没有服务，故障从可自愈变成不可自愈。这个坑我们踩了一次，记住顺序：先修节点上的容器（重启 kubelet），再处理 Pod 对象。
 
 ## Harbor 与 Redis 恢复
 
@@ -417,7 +417,7 @@ curl -k -u admin:Harbor12345 https://registry.dev.huawei.com/v2/_catalog
 # 期望: 返回 JSON 格式的镜像列表
 ```
 
-`_catalog` 返回完整镜像列表，说明 Harbor 完全恢复。这个"三层验证"的顺序（Pod 存在 → Service 可达 → 域名可用）值得保留：只测最后一层会误判，只测第一层会过早乐观。
+`_catalog` 返回完整镜像列表，说明 Harbor 完全恢复。三层验证的顺序（Pod 存在 → Service 可达 → 域名可用）不能省：只测最后一层会误判，只测第一层会过早乐观。
 
 ## 业务恢复与残留清理
 
@@ -445,7 +445,7 @@ kubectl delete node master-1
 kubectl delete node master-3
 ```
 
-这一点我们吃过回头账：master-3 的 kubelet 被重新启动过，etcd/apiserver 又尝试跑起来。**"停服务"和"移走静态 Pod 清单"必须同时做**，只 `stop` 而不 `disable`，一次重启就会复发。
+这一点我们吃过回头账：master-3 的 kubelet 被重新启动过，etcd/apiserver 又尝试跑起来。"停服务"和"移走静态 Pod 清单"必须同时做，只 `stop` 而不 `disable`，一次重启就会复发。
 
 ## 做对了什么，做错了什么
 
@@ -460,13 +460,13 @@ kubectl delete node master-3
 
 ## 尚未完成的事（风险仍在）
 
-故障恢复了，但下面这几件事**没有做完**，风险仍然挂在那里：
+故障恢复了，但下面这几件事没有做完，风险仍然挂在那里：
 
-1. **master-1 尚未修复**，集群目前跑在单节点 etcd 上——**现在没有任何 HA 余量**，再挂一台就彻底没了。
-2. **etcd 没有自动快照**。刚才能保住数据，靠的是 master-2 的数据目录恰好完整，而不是因为有备份。这是运气，不是能力。
-3. **`/var/lib/etcd` 所在分区使用率 78%**，需要清理容器日志、无用镜像，并配置 etcd 压缩与碎片整理。
-4. **master-3 残留仍需彻底降级或移除**。
-5. **Harbor 的 Redis / PostgreSQL 仍是单点**，依赖链的脆弱性没有消除。
+1. master-1 尚未修复，集群目前跑在单节点 etcd 上，现在没有任何 HA 余量，再挂一台就彻底没了。
+2. etcd 没有自动快照。刚才能保住数据，靠的是 master-2 的数据目录恰好完整，并没有备份可回滚。这是运气。
+3. `/var/lib/etcd` 所在分区使用率 78%，需要清理容器日志、无用镜像，并配置 etcd 压缩与碎片整理。
+4. master-3 残留仍需彻底降级或移除。
+5. Harbor 的 Redis / PostgreSQL 仍是单点，依赖链的脆弱性没有消除。
 
 ## 加固清单
 
@@ -498,7 +498,7 @@ crontab -e
 
 ## 附：再遇到时的执行顺序
 
-**止损（先建退路）**
+止损：先建退路
 
 1. 停止故障节点上的 etcd 相关操作，隔离该节点
 2. 停掉它的 kubelet 并 `disable`，移走静态 Pod 清单
@@ -506,7 +506,7 @@ crontab -e
 4. 备份健康节点的 `/var/lib/etcd` 和 `/etc/kubernetes/manifests`
 5. `etcdctl endpoint status` 确认 DB SIZE 与数据完整
 
-**恢复（从底层往上）**
+恢复：从底层往上
 
 6. 单节点 etcd：`--force-new-cluster=true` + `--initial-cluster-state=new` + 单成员 `--initial-cluster`
 7. 验证 `ready to serve client requests` 与 `endpoint health`
@@ -514,7 +514,7 @@ crontab -e
 9. 摘掉 `--force-new-cluster` 重启，确认仍健康
 10. 等 apiserver 自动重建：`curl -k https://127.0.0.1:6443/healthz` → `kubectl get nodes`
 
-**善后（自愈优先，删对象最后）**
+善后：自愈优先，删对象最后
 
 11. 幽灵 Pod：逐节点重启 kubelet，用本地镜像缓存重建
 12. Harbor / Redis 恢复（Pod → Service → 域名 三层验证）
@@ -523,15 +523,16 @@ crontab -e
 
 三条铁律：
 
-1. **不要三台 master 的 kubelet 一起重启**——3 节点 etcd 需要 2 票，同时重启等于亲手把 Quorum 弄丢。
-2. **不要贸然删除 `/var/lib/etcd`**——先尝试恢复；`snapshot restore` 或重新 `kubeadm init` 是最后手段，代价是丢数据。
-3. **故障期间严禁引入新变更**——`--force-new-cluster` 在 master-3 上是灾难，在 master-2 上是解药，区别只在前置条件。没满足条件就别执行。
+1. 不要三台 master 的 kubelet 一起重启。3 节点 etcd 需要 2 票，同时重启等于亲手把 Quorum 弄丢。
+2. 不要贸然删除 `/var/lib/etcd`。先尝试恢复；`snapshot restore` 或重新 `kubeadm init` 是最后手段，代价是丢数据。
+3. 故障期间严禁引入新变更。`--force-new-cluster` 在 master-3 上是灾难，在 master-2 上是解药，区别只在前置条件。没满足条件就别执行。
 
 ## 结语
 
-这次故障的直接原因是 etcd Quorum 丢失，但把"可恢复的 Quorum 丢失"变成"险些不可恢复的数据污染"的，是排查过程中的一次误操作。所以最该记住的不是哪个参数，而是两条纪律：
+这次故障的直接原因是 etcd Quorum 丢失，而把"可恢复的 Quorum 丢失"变成"险些不可恢复的数据污染"的，是排查过程中的一次误操作。
 
-- **报错的位置和故障的位置可以相隔很远。** 面板告诉我 Prometheus 查询失败，真实情况是三台 master 的 apiserver 都没在监听。看到 `EOF`、`connection refused`、`no route to host` 这类链路层症状时，先做可达性分层探测，不要直接跳进业务组件的配置里找答案。
-- **动手之前先建退路。** 这次能保住数据，靠的是备份和 `DB SIZE 423MB` 这次确认——**如果顺序反了，先执行了那个参数，就没有这份复盘了。**
+面板报的是 Prometheus 查询失败，真实情况是三台 master 的 apiserver 都没在监听。看到 `EOF`、`connection refused`、`no route to host` 这类链路层症状时，先做可达性分层探测，再去看业务组件的配置。
 
-最后留一句提醒给自己：本次恢复结束在"单节点 etcd 模式"，**这是一个能跑、但零 HA 余量的状态**。故障复盘如果只停在"服务恢复了"，下次就还会以同样的方式再来一遍。
+这次能保住数据，靠的是备份和 `DB SIZE 423MB` 这次确认。顺序如果反了，先执行了那个参数，就没有这份复盘了。
+
+本次恢复结束在"单节点 etcd 模式"，能跑，但零 HA 余量。

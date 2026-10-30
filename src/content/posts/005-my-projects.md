@@ -1,6 +1,6 @@
 ---
 title: 聊聊我的开源项目们：LLM 基础设施方向的技术探索
-description: 回顾这几年在 LLM 基础设施方向的开源项目探索，从性能测试到镜像管理，从 KV Cache 优化到多用户系统，记录踩坑过程中的技术成长
+description: 六个开源项目的回顾：性能测试、镜像同步、KV Cache 计算与持久化，记录解决什么问题、卡在哪、下一步想做什么
 publishedAt: "2026-06-01"
 category: 项目笔记
 tags:
@@ -12,13 +12,9 @@ draft: false
 
 ## 写在前面
 
-过去两年，LLM 应用爆发式增长，但很多人关注的都是模型本身——参数量、推理能力、多模态支持。作为一个基础设施工程师，我更关注的是：**模型怎么跑起来？跑起来怎么稳定？稳定了怎么更省钱？**
+这两年大家在聊模型本身，参数量、推理能力、多模态。我做基础设施，关心的还是那几个更笨的问题：模型怎么跑起来，跑起来怎么稳住，稳住了怎么少花钱。
 
-这些问题看似「配角」，但在生产环境中往往决定了成败。模型再强，部署搞不定也白搭；推理再快，资源管理混乱也会翻车。
-
-于是我开始在这个方向做了一些探索，写了几个开源项目。今天想聊聊这些项目背后的故事——解决的问题、踩过的坑、学到的东西。
-
----
+模型再强，部署搞不定也没用；推理再快，资源管理一乱照样翻车。这两年我就在这个方向写了几个工具，下面一个一个说，包括当时想解决什么、卡在哪、现在什么状态。
 
 ## ClawPerf：LLM 服务性能基准测试
 
@@ -26,15 +22,11 @@ GitHub: [Potterluo/ClawPerf](https://github.com/Potterluo/ClawPerf)
 
 ### 问题背景
 
-LLM 服务上线前，大家都会做性能测试。但现有的工具要么太简单（单请求测试），要么太复杂（需要搭建整套压测平台）。我想要的很简单：
+LLM 服务上线前都要做性能测试。现成的工具要么太简单，只发单请求；要么太重，得搭一整套压测平台。我想要的东西很朴素：能模拟几个真实用户一起打过来，统计 TTFT、TPS 和成功率，一个命令就能跑，不用装一堆依赖。
 
-- **模拟真实多用户负载**：不是发一个请求测延迟，而是模拟 10 个用户同时请求
-- **统计关键指标**：TTFT（首字延迟）、TPS（每秒 token 数）、成功率
-- **CLI 工具**：不想装一堆依赖，只想一个命令搞定
+### 设计
 
-### ClawPerf 的设计
-
-核心思路：**用并发控制模拟真实负载**。
+核心就是并发控制，用多个并发请求去逼近真实负载：
 
 ```bash
 # 基本用法：模拟 5 个并发用户，每个发 10 个请求
@@ -45,30 +37,19 @@ clawperf --url http://localhost:8000/v1/chat/completions \
          --prompt "Hello, how are you?"
 ```
 
-输出会统计：
+输出会统计平均 TTFT、平均 TPS、成功失败率，以及 P50/P90/P99 的延迟分布。
 
-- 平均 TTFT（首字延迟）
-- 平均 TPS（生成速度）
-- 成功/失败率
-- P50/P90/P99 延迟分布
+### 三个技术点
 
-### 关键技术点
-
-1. **并发模型**：用异步 HTTP 客户端（Python asyncio + aiohttp）实现真正的并发请求
-2. **流式处理**：LLM 推理是流式输出，需要边接收边计算指标
-3. **Token 计数**：没有现成的 tokenizer 时，用字符数估算（不够精确但能反映趋势）
+并发用 Python asyncio 加 aiohttp，异步 HTTP 客户端才能真正并发，开线程是假的。指标要边收边算，因为推理是流式输出，等整个响应回来再统计，TTFT 就没意义了。Token 计数在没有现成 tokenizer 时用字符数估算，不精确，但看趋势够用。
 
 ### 适用场景
 
-- 模型上线前的性能验收
-- 不同推理引擎对比（vLLM、TGI、TensorRT-LLM）
-- 硬件配置选型（测不同 GPU 的表现）
+模型上线前的性能验收、不同推理引擎之间横向对比（vLLM、TGI、TensorRT-LLM）、GPU 选型时测不同卡的表现。
 
 ### 后续计划
 
-想加入更多测试模式：长文本测试、多轮对话测试、混合负载测试。
-
----
+想加长文本测试、多轮对话测试和混合负载测试。
 
 ## MirrorX：容器镜像同步系统
 
@@ -76,20 +57,11 @@ GitHub: [Potterluo/MirrorX](https://github.com/Potterluo/MirrorX)
 
 ### 问题背景
 
-容器镜像管理是个老问题，但在 AI 场景变得更复杂：
+镜像管理是个老问题，但 AI 场景把它放大了。LLM 相关镜像动辄几 GB 到十几 GB，还要从 Docker Hub 同步到内网、再同步到多云，基础镜像一更新就得跟着同步新版本。
 
-- **镜像体积大**：LLM 相关镜像动辄几 GB 甚至十几 GB
-- **多仓库同步**：从 Docker Hub 同步到内网仓库，还要同步到多云环境
-- **定时更新**：基础镜像更新后，需要自动同步新版本
+### 架构
 
-### MirrorX 的架构
-
-核心组件：
-
-1. **skopeo**：镜像同步的利器，支持跨仓库复制
-2. **cron 定时任务**：定期检查和同步
-3. **webhook 通知**：同步完成/失败时通知
-4. **WebUI 管理界面**：可视化配置和监控
+四个组件：skopeo 负责跨仓库复制，cron 定时触发，webhook 在完成或失败时通知，WebUI 做可视化的配置和监控。
 
 ```yaml
 # 同步任务配置示例
@@ -104,20 +76,13 @@ sync_tasks:
     notify_webhook: "https://my-webhook/sync-complete"
 ```
 
-### 关键特性
+### 几个特性
 
-- **增量同步**：只同步新增的 layer，节省带宽和时间
-- **架构过滤**：只同步需要的架构（amd64 或 arm64）
-- **失败重试**：网络抖动自动重试，不丢任务
-- **同步历史**：可查看每次同步的详细日志
+增量同步只拉新增的 layer，省带宽也省时间；架构过滤只同步需要的 amd64 或 arm64；网络抖动时自动重试，不丢任务；每次同步的日志都留档，出问题能翻。
 
 ### 适用场景
 
-- 企业内网镜像仓库维护
-- 多云环境镜像分发
-- CI/CD 缓存加速（提前同步常用镜像）
-
----
+企业内网仓库维护、多云环境分发、CI/CD 里提前预热常用镜像。
 
 ## KVCache-calculator-Skill：KV Cache 内存计算器
 
@@ -125,16 +90,11 @@ GitHub: [Potterluo/KVCache-calculator-Skill](https://github.com/Potterluo/KVCach
 
 ### 问题背景
 
-LLM 推理时，KV Cache 是内存大户。很多人问我：「我这台 GPU 能跑多大的模型？能支持多长的上下文？」
+KV Cache 是推理时的内存大户，经常有人问我这台卡能跑多大模型、能撑多长上下文。这事不是拿参数量除一下就能回答的，得看序列长度、层数、注意力头数，还得看架构。
 
-这个问题不是简单算算参数量就行，得考虑：
+### 设计
 
-- **KV Cache 的内存占用**：和序列长度、层数、注意力头数相关
-- **不同架构差异**：MLA、GQA、Hybrid、Standard 的内存计算方式不同
-
-### 计算器的设计
-
-做成 CLI 工具，输入模型参数，输出内存估算：
+做成 CLI，输入模型参数，输出内存估算：
 
 ```bash
 # 计算 Standard Attention 的 KV Cache
@@ -148,7 +108,7 @@ kvcache-calc --architecture standard \
 # 输出：Estimated KV Cache Memory: 2.0 GB
 ```
 
-支持多种架构：
+支持的架构：
 
 | 架构     | 特点                        | 计算公式差异                              |
 | -------- | --------------------------- | ----------------------------------------- |
@@ -157,37 +117,23 @@ kvcache-calc --architecture standard \
 | MLA      | Multi-Head Latent Attention | DeepSeek 的压缩方案，内存大幅降低         |
 | Hybrid   | 混合架构                    | 按比例组合不同 Attention                  |
 
-### 技术难点
+### 难点
 
-1. **公式推导**：每种架构的 KV Cache 计算方式不同，需要理解原理
-2. **单位换算**：dtype 影响（fp16=2bytes, fp32=4bytes）
-3. **边界情况**：超长序列、多批次时的内存峰值
+每种架构的公式得自己推一遍，抄不得。dtype 会影响结果，fp16 是 2 字节、fp32 是 4 字节。超长序列和多批次下的内存峰值也要单独处理。
 
 ### 适用场景
 
-- 部署前的资源评估
-- 不同架构的内存对比
-- 长文本场景的可行性分析
-
----
+部署前的资源评估、不同架构之间的内存对比、长文本场景到底可不可行。
 
 ## docker-pull-tar：Docker 镜像拉取工具
 
 GitHub: [Potterluo/docker-pull-tar](https://github.com/Potterluo/docker-pull-tar)
 
-这个项目我之前专门写过博客（[我写了个 Docker 镜像拉取工具，不用装 Docker](/posts/docker-pull-tar/))，简单回顾一下：
+这个项目之前单独写过（[我写了个 Docker 镜像拉取工具，不用装 Docker](/posts/docker-pull-tar/))，这里简单回顾：
 
-### 核心价值
+不需要 Docker 也不需要 Python，有 curl 和 shell 就能从 Registry 拉镜像打包成 tar。
 
-**不需要 Docker/Python，只要有 curl 和 shell，就能从 Registry 拉镜像并打包成 tar。**
-
-解决的是内网部署和离线交付的痛点：
-
-- 目标机器没有 Docker，但需要拉镜像
-- 大镜像传输中断，需要断点续传
-- 拉错了架构的镜像（比如在 ARM 机器拉了 x86）
-
-### 使用示例
+它解决的是内网和离线交付的麻烦事：目标机器没有 Docker 但要拉镜像；大镜像传到一半断了；在 ARM 机器上不小心拉了 x86 的镜像。
 
 ```bash
 # 基本用法
@@ -201,17 +147,7 @@ GitHub: [Potterluo/docker-pull-tar](https://github.com/Potterluo/docker-pull-tar
 ./docker-pull-tar.sh nginx:latest
 ```
 
-### 技术实现
-
-绕过 Docker，直接和 Registry HTTP API 对话：
-
-1. 解析镜像名 → 获取 Registry 地址
-2. 获取 Manifest → 查询镜像的 layer 列表
-3. 下载 Layers → 用 curl 逐个下载 blob
-4. 组装 Tar → 按照 Docker 的 tar 格式组装
-5. 校验 SHA256 → 确保下载完整
-
----
+实现上是绕开 Docker，直接和 Registry 的 HTTP API 打交道：解析镜像名拿到 Registry 地址，取 Manifest 查 layer 列表，用 curl 一个个下 blob，按 Docker 的 tar 格式组装，最后校验 SHA256。
 
 ## unified-cache-management：LLM KV Cache 持久化复用
 
@@ -219,13 +155,7 @@ GitHub: [Potterluo/unified-cache-management](https://github.com/Potterluo/unifie
 
 ### 问题背景
 
-LLM 推理中，KV Cache 的计算开销很大。对于相同 prefix 的请求（比如相同的 system prompt），每次都重新计算 KV Cache 是浪费。
-
-如果能 **持久化 KV Cache，后续请求复用**，就能：
-
-- 降低首字延迟（TTFT）
-- 节省计算资源
-- 提升吞吐量
+相同 prefix 的请求（比如同一段 system prompt）每次都要重算一遍 KV Cache，纯属浪费。如果能持久化下来给后续请求复用，TTFT、算力、吞吐三样都能受益。
 
 ### 设计思路
 
@@ -237,23 +167,11 @@ LLM 推理中，KV Cache 的计算开销很大。对于相同 prefix 的请求�
 4. 如果没有 → 完整计算，并缓存结果
 ```
 
-核心挑战：
-
-- **KV Cache 的序列化**：不同推理引擎的格式不同，需要统一接口
-- **缓存匹配算法**：如何快速判断两个请求的 prefix 是否相同
-- **缓存淘汰策略**：内存有限，需要 LRU 或其他策略管理缓存
+三处难点：不同推理引擎的 KV Cache 格式不一样，要统一接口；prefix 匹配要快；内存有限，淘汰策略得想清楚。
 
 ### 当前进展
 
-还在实验阶段，主要验证了：
-
-- prefix 匹配时的性能提升（TTFT 降低 30%-50%）
-- 不同推理引擎的缓存接口差异
-- 内存管理的基本策略
-
-后续想做成通用的缓存层，适配多种推理引擎。
-
----
+还在实验阶段。已验证的是 prefix 匹配能带来 30%-50% 的 TTFT 下降、不同引擎的缓存接口差多少、内存管理的基本策略。后面想做成通用缓存层，适配多种推理引擎。
 
 ## MultiUserClaw：多用户版 OpenClaw
 
@@ -261,15 +179,9 @@ GitHub: [Potterluo/MultiUserClaw](https://github.com/Potterluo/MultiUserClaw)
 
 ### 问题背景
 
-OpenClaw 是一个优秀的 LLM 接口聚合项目，但原版主要面向单用户场景。在企业使用时，我们需要：
+OpenClaw 是个不错的 LLM 接口聚合项目，原版面向单用户。放到企业里就不够了，需要多用户隔离、每个人的用量统计、配额管理防止一个人把资源吃光。
 
-- **多用户隔离**：每个用户有自己的 API key 和权限
-- **用量统计**：每个用户的 token 使用量、成本统计
-- **配额管理**：防止某个用户占用过多资源
-
-### MultiUserClaw 的扩展
-
-在 OpenClaw 基础上增加：
+### 扩展
 
 ```yaml
 # 用户配置示例
@@ -291,24 +203,15 @@ users:
       - "gpt-3.5"
 ```
 
-### 关键特性
-
-- **请求路由**：根据 API key 识别用户，路由到对应的模型配置
-- **配额检查**：请求前检查用户配额，超限则拒绝
-- **用量统计**：记录每次请求的 token 数、成本，可导出报表
-- **权限隔离**：不同用户可访问不同的模型
+按 API key 识别用户，路由到对应的模型配置；请求前查配额，超了直接拒；每次请求记 token 数和成本，能导出报表；不同用户可访问的模型分开。
 
 ### 适用场景
 
-- 企业内部 LLM 服务管理
-- 多团队共享推理资源
-- API 服务计量计费
-
----
+企业内部 LLM 服务、多团队共享推理资源、按用量计费。
 
 ## 回顾与展望
 
-这6个项目，看起来方向各异，但都围绕一个核心：**让 LLM 在生产环境中跑得更稳、更省、更方便。**
+六个项目方向各不相同，但都在解决同一类问题：让 LLM 在生产环境里更稳、更省、更省事。
 
 | 项目                     | 解决的问题        | 核心价值                   |
 | ------------------------ | ----------------- | -------------------------- |
@@ -319,28 +222,8 @@ users:
 | unified-cache-management | KV Cache 重复计算 | 持久化复用，降低延迟       |
 | MultiUserClaw            | 多用户管理缺失    | 配额、权限、用量统计       |
 
-做这些项目的过程中，学到了很多：
+写这些项目的收获，主要是把几个方向吃深了一点：KV Cache、TTFT、TPS 这些指标背后到底是什么；Registry API 和镜像格式怎么工作；做工具和做 Demo 的区别在哪，后者能跑，前者要能给人用；以及开源是怎么运转的，提 PR、收 Issue、被别人的需求推着改。
 
-1. **LLM 推理的细节**：KV Cache、TTFT、TPS 这些指标背后的原理
-2. **容器技术的深挖**：Registry API、镜像格式、同步机制
-3. **工程化的思维**：不是做 Demo，而是做能用的工具
-4. **开源的协作**：提 PR、收 Issue、迭代改进
+接下来想往三个方向走：缓存管理不只做 prefix 匹配，语义相近的请求也能复用；多模型混跑时的资源分配；以及更准确的资源预估和成本控制。
 
-接下来想继续深挖的方向：
-
-- **更智能的缓存管理**：不只是 prefix 匹配，而是语义相似的请求也能复用缓存
-- **推理引擎的调度优化**：多模型混跑时的资源分配
-- **成本优化**：更精确的资源预估和成本控制
-
-如果你也在做 LLM 基础设施相关工作，欢迎交流。这些项目都在 GitHub 上开源，欢迎提 Issue、PR，或者只是 Star 支持一下——这对独立开发者来说，是很大的鼓励。
-
----
-
-## 相关链接
-
-- ClawPerf: [https://github.com/Potterluo/ClawPerf](https://github.com/Potterluo/ClawPerf)
-- MirrorX: [https://github.com/Potterluo/MirrorX](https://github.com/Potterluo/MirrorX)
-- KVCache-calculator-Skill: [https://github.com/Potterluo/KVCache-calculator-Skill](https://github.com/Potterluo/KVCache-calculator-Skill)
-- docker-pull-tar: [https://github.com/Potterluo/docker-pull-tar](https://github.com/Potterluo/docker-pull-tar)
-- unified-cache-management: [https://github.com/Potterluo/unified-cache-management](https://github.com/Potterluo/unified-cache-management)
-- MultiUserClaw: [https://github.com/Potterluo/MultiUserClaw](https://github.com/Potterluo/MultiUserClaw)
+项目都在 GitHub 上，有 Issue 和 PR 都欢迎。
