@@ -1,0 +1,75 @@
+<svg width="1000" height="600" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#F8FAFC"/>
+  <defs>
+    <marker id="f5ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+
+  <rect x="40" y="56" width="920" height="76" rx="12" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.6"/>
+  <text x="500" y="88" font-size="13" font-weight="700" fill="#075985" text-anchor="middle">宿主 Coding Agent（Codex / Claude Code / DeepSeek Harness）</text>
+  <text x="500" y="110" font-size="11" fill="#0369A1" text-anchor="middle">模型 · 工具调用 · 代码执行 · 上下文管理</text>
+
+  <line x1="470" y1="132" x2="470" y2="168" stroke="#64748B" stroke-width="1.6" marker-end="url(#f5ar)"/>
+  <text x="486" y="156" font-size="11" fill="#64748B">读取规则、教材与 Skills</text>
+
+  <rect x="40" y="172" width="640" height="388" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.4"/>
+  <text x="56" y="198" font-size="12" font-weight="700" fill="#0F172A">course 仓库 · 纯文本资产</text>
+
+  <text x="60" y="224" font-size="11" fill="#94A3B8">knowledge/ · 教材</text>
+  <rect x="60" y="236" width="190" height="32" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="72" y="257" font-size="11" fill="#312E81">foundations</text>
+  <rect x="60" y="274" width="190" height="32" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="72" y="295" font-size="11" fill="#312E81">machine-learning</text>
+  <rect x="60" y="312" width="190" height="32" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="72" y="333" font-size="11" fill="#312E81">deep-learning</text>
+  <rect x="60" y="350" width="190" height="32" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="72" y="371" font-size="11" fill="#312E81">transformer</text>
+  <rect x="60" y="388" width="190" height="32" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="72" y="409" font-size="11" fill="#312E81">llm</text>
+  <rect x="60" y="426" width="190" height="32" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="72" y="447" font-size="11" fill="#312E81">llm-engineering</text>
+
+  <text x="270" y="224" font-size="11" fill="#94A3B8">.agents/skills/ · 教学能力</text>
+  <rect x="270" y="236" width="210" height="32" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="282" y="257" font-size="11" fill="#075985">learning-diagnosis</text>
+  <rect x="270" y="274" width="210" height="32" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="282" y="295" font-size="11" fill="#075985">learning-planner</text>
+  <rect x="270" y="312" width="210" height="32" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="282" y="333" font-size="11" fill="#075985">concept-explorer</text>
+  <rect x="270" y="350" width="210" height="32" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="282" y="371" font-size="11" fill="#075985">learning-lab</text>
+  <rect x="270" y="388" width="210" height="32" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="282" y="409" font-size="11" fill="#075985">knowledge-assessment</text>
+  <rect x="270" y="426" width="210" height="32" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="282" y="447" font-size="11" fill="#075985">learning-review</text>
+
+  <text x="500" y="224" font-size="11" fill="#94A3B8">工程面</text>
+  <rect x="500" y="236" width="160" height="32" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="512" y="257" font-size="11" fill="#065F46">labs/</text>
+  <rect x="500" y="274" width="160" height="32" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="512" y="295" font-size="11" fill="#065F46">assessments/</text>
+  <rect x="500" y="312" width="160" height="32" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="512" y="333" font-size="11" fill="#065F46">schemas/</text>
+  <rect x="500" y="350" width="160" height="32" rx="8" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="512" y="371" font-size="11" fill="#92400E">AGENTS.md</text>
+  <rect x="500" y="388" width="160" height="32" rx="8" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="512" y="409" font-size="11" fill="#92400E">README.md</text>
+
+  <text x="56" y="496" font-size="11" fill="#64748B">全部是文本：能被 git diff、能被 Agent 读、能被不同宿主复用。</text>
+  <text x="56" y="518" font-size="11" fill="#94A3B8">资产是教材、判据和 Skill，平台不是。</text>
+
+  <rect x="720" y="240" width="240" height="240" rx="12" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="736" y="266" font-size="12" font-weight="700" fill="#065F46">learner/ · 个人状态</text>
+  <text x="736" y="300" font-size="11.5" fill="#047857">profile.md</text>
+  <text x="736" y="328" font-size="11.5" fill="#047857">progress.yaml</text>
+  <text x="736" y="356" font-size="11.5" fill="#047857">mistakes.md</text>
+  <text x="736" y="384" font-size="11.5" fill="#047857">journal.md</text>
+  <text x="736" y="428" font-size="10.5" fill="#64748B">学习者主写，Agent 只读；</text>
+  <text x="736" y="446" font-size="10.5" fill="#64748B">否则「学习状态」变成自评。</text>
+
+  <line x1="682" y1="330" x2="716" y2="330" stroke="#64748B" stroke-width="1.6" marker-end="url(#f5ar)"/>
+  <text x="699" y="320" font-size="10" fill="#64748B" text-anchor="middle">读</text>
+  <line x1="718" y1="400" x2="684" y2="400" stroke="#64748B" stroke-width="1.6" marker-end="url(#f5ar)"/>
+  <text x="701" y="390" font-size="10" fill="#64748B" text-anchor="middle">写</text>
+</svg>

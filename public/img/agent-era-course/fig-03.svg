@@ -1,0 +1,47 @@
+<svg width="1000" height="500" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="500" fill="#F8FAFC"/>
+  <defs>
+    <marker id="f3ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+    <marker id="f3up" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <text x="60" y="44" font-size="15" font-weight="700" fill="#0F172A">知识的三级权限</text>
+  <text x="60" y="67" font-size="11.5" fill="#64748B">Agent 可以自由改教法，不能自由改知识</text>
+
+  <rect x="60" y="100" width="520" height="100" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.6"/>
+  <text x="84" y="132" font-size="13" font-weight="700" fill="#92400E">L1 · Canonical Knowledge</text>
+  <text x="84" y="153" font-size="11" fill="#B45309">核心定义 · 数学公式 · 关键推导 · 已审核结论</text>
+  <text x="84" y="174" font-size="10.5" fill="#B45309">来源：教材。人工审核，版本可追踪。</text>
+
+  <rect x="60" y="220" width="520" height="100" rx="12" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.6"/>
+  <text x="84" y="252" font-size="13" font-weight="700" fill="#312E81">L2 · Adaptive Explanation</text>
+  <text x="84" y="273" font-size="11" fill="#4338CA">难度分级 · 类比 · 补充推导 · 辅助代码</text>
+  <text x="84" y="294" font-size="10.5" fill="#4338CA">来源：Agent 生成。必须与 L1 一致。</text>
+
+  <rect x="60" y="340" width="520" height="100" rx="12" fill="#ECFDF5" stroke="#10B981" stroke-width="1.6"/>
+  <text x="84" y="372" font-size="13" font-weight="700" fill="#065F46">L3 · Exploration</text>
+  <text x="84" y="393" font-size="11" fill="#047857">论文 · 前沿 · 不同学术观点 · 未共识问题</text>
+  <text x="84" y="414" font-size="10.5" fill="#047857">来源：外部资料。须标注出处与确信度。</text>
+
+  <line x1="582" y1="150" x2="636" y2="150" stroke="#64748B" stroke-width="1.6" marker-end="url(#f3ar)"/>
+  <line x1="582" y1="270" x2="636" y2="270" stroke="#64748B" stroke-width="1.6" marker-end="url(#f3ar)"/>
+  <line x1="582" y1="390" x2="636" y2="390" stroke="#64748B" stroke-width="1.6" marker-end="url(#f3ar)"/>
+
+  <rect x="640" y="124" width="300" height="52" rx="26" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.4"/>
+  <text x="790" y="156" font-size="12" font-weight="600" fill="#92400E" text-anchor="middle">只读：遵循或举证质疑</text>
+
+  <rect x="640" y="244" width="300" height="52" rx="26" fill="#E0E7FF" stroke="#6366F1" stroke-width="1.4"/>
+  <text x="790" y="276" font-size="12" font-weight="600" fill="#312E81" text-anchor="middle">有条件：必须与 L1 一致</text>
+
+  <rect x="640" y="364" width="300" height="52" rx="26" fill="#D1FAE5" stroke="#10B981" stroke-width="1.4"/>
+  <text x="790" y="396" font-size="12" font-weight="600" fill="#065F46" text-anchor="middle">放开：标注来源与确信度</text>
+
+  <line x1="965" y1="424" x2="965" y2="112" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#f3up)"/>
+  <text x="982" y="268" font-size="11" fill="#94A3B8" text-anchor="middle" transform="rotate(-90 982 268)">Agent 自由度递增</text>
+
+  <text x="60" y="472" font-size="11.5" fill="#64748B">越往上越自由，越往下越要举证。学习者也有权知道：这句话属于哪一层。</text>
+</svg>

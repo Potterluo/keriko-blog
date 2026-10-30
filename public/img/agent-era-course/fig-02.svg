@@ -1,0 +1,78 @@
+<svg width="1000" height="680" viewBox="0 0 1000 680" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="680" fill="#F8FAFC"/>
+  <defs>
+    <marker id="f2ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="40" font-size="15" font-weight="700" fill="#0F172A">三层职责与六个 Skill</text>
+
+  <rect x="40" y="60" width="920" height="120" rx="14" fill="#F8FAFC" stroke="#C7D2FE" stroke-width="1.4"/>
+  <text x="56" y="84" font-size="12" font-weight="700" fill="#4338CA">Knowledge 知识层 · 学什么</text>
+  <rect x="56" y="96" width="168" height="52" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.4"/>
+  <text x="140" y="127" font-size="12" font-weight="600" fill="#312E81" text-anchor="middle">教材与定义</text>
+  <rect x="236" y="96" width="168" height="52" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.4"/>
+  <text x="320" y="127" font-size="12" font-weight="600" fill="#312E81" text-anchor="middle">图示与公式</text>
+  <rect x="416" y="96" width="168" height="52" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.4"/>
+  <text x="500" y="127" font-size="12" font-weight="600" fill="#312E81" text-anchor="middle">代码与实验</text>
+  <rect x="596" y="96" width="168" height="52" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.4"/>
+  <text x="680" y="127" font-size="12" font-weight="600" fill="#312E81" text-anchor="middle">评估标准</text>
+  <rect x="776" y="96" width="168" height="52" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.4"/>
+  <text x="860" y="127" font-size="12" font-weight="600" fill="#312E81" text-anchor="middle">模块元数据</text>
+
+  <line x1="500" y1="180" x2="500" y2="218" stroke="#64748B" stroke-width="1.6" marker-end="url(#f2ar)"/>
+  <text x="516" y="203" font-size="11" fill="#64748B">Agent 只读不写，冲突时举证质疑</text>
+
+  <rect x="40" y="220" width="920" height="200" rx="14" fill="#F8FAFC" stroke="#BAE6FD" stroke-width="1.4"/>
+  <text x="56" y="244" font-size="12" font-weight="700" fill="#0369A1">Agent 教学层 · 怎么学</text>
+
+  <rect x="56" y="258" width="288" height="54" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.4"/>
+  <text x="72" y="282" font-size="12" font-weight="600" fill="#075985">learning-diagnosis</text>
+  <text x="72" y="300" font-size="11" fill="#0369A1">诊断基础、识别知识缺口</text>
+
+  <rect x="356" y="258" width="288" height="54" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.4"/>
+  <text x="372" y="282" font-size="12" font-weight="600" fill="#075985">learning-planner</text>
+  <text x="372" y="300" font-size="11" fill="#0369A1">按缺口排路径，而不是按章节</text>
+
+  <rect x="656" y="258" width="288" height="54" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.4"/>
+  <text x="672" y="282" font-size="12" font-weight="600" fill="#075985">concept-explorer</text>
+  <text x="672" y="300" font-size="11" fill="#0369A1">分级讲解、给类比与补充推导</text>
+
+  <rect x="56" y="324" width="288" height="54" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.4"/>
+  <text x="72" y="348" font-size="12" font-weight="600" fill="#075985">learning-lab</text>
+  <text x="72" y="366" font-size="11" fill="#0369A1">建实验、跑代码、看结果</text>
+
+  <rect x="356" y="324" width="288" height="54" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.4"/>
+  <text x="372" y="348" font-size="12" font-weight="600" fill="#075985">knowledge-assessment</text>
+  <text x="372" y="366" font-size="11" fill="#0369A1">独立挑战，不给答案</text>
+
+  <rect x="656" y="324" width="288" height="54" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.4"/>
+  <text x="672" y="348" font-size="12" font-weight="600" fill="#075985">learning-review</text>
+  <text x="672" y="366" font-size="11" fill="#0369A1">复盘并更新学习者状态</text>
+
+  <line x1="500" y1="420" x2="500" y2="458" stroke="#64748B" stroke-width="1.6" marker-end="url(#f2ar)"/>
+  <text x="516" y="443" font-size="11" fill="#64748B">结果写回，决定下一轮从哪里开始</text>
+
+  <rect x="40" y="460" width="920" height="180" rx="14" fill="#F8FAFC" stroke="#FDBA74" stroke-width="1.4"/>
+  <text x="56" y="484" font-size="12" font-weight="700" fill="#B45309">Learner 学习者层 · 学会了什么</text>
+
+  <rect x="56" y="500" width="213" height="56" rx="10" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.4"/>
+  <text x="72" y="522" font-size="12" font-weight="600" fill="#92400E">profile.md</text>
+  <text x="72" y="540" font-size="11" fill="#B45309">基础、目标、可用时间</text>
+
+  <rect x="281" y="500" width="213" height="56" rx="10" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.4"/>
+  <text x="297" y="522" font-size="12" font-weight="600" fill="#92400E">progress.yaml</text>
+  <text x="297" y="540" font-size="11" fill="#B45309">模块 × 能力等级</text>
+
+  <rect x="506" y="500" width="213" height="56" rx="10" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.4"/>
+  <text x="522" y="522" font-size="12" font-weight="600" fill="#92400E">mistakes.md</text>
+  <text x="522" y="540" font-size="11" fill="#B45309">错在哪、为什么错</text>
+
+  <rect x="731" y="500" width="213" height="56" rx="10" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.4"/>
+  <text x="747" y="522" font-size="12" font-weight="600" fill="#92400E">journal.md</text>
+  <text x="747" y="540" font-size="11" fill="#B45309">复盘与下一步</text>
+
+  <text x="56" y="596" font-size="11.5" fill="#64748B">教材提供稳定基线，Agent 提供灵活教学，记录让个性化有依据——三者缺一，共学就退化成聊天。</text>
+  <text x="56" y="620" font-size="11" fill="#94A3B8">注：Learner 层由学习者主写，Agent 只读；否则「学习状态」会变成 Agent 对自己的评分。</text>
+</svg>
