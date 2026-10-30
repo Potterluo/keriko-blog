@@ -16,7 +16,7 @@ draft: false
 
 vLLM 是当前最流行的 LLM 推理引擎之一，以其高效的 KV Cache 管理和 PagedAttention 机制闻名。但对于初学者来说，vLLM 的源码庞大复杂，难以快速把握核心原理。
 
-**Nano-vLLM** 是一个精简版的 vLLM 实现，保留了核心架构，代码量极少，非常适合学习 LLM 推理引擎的内部机制。本文通过阅读 nanovllm 源码，深入理解推理引擎的核心组件和执行流程。
+Nano-vLLM 是一个精简版的 vLLM 实现，保留了核心架构，代码量极少，非常适合学习 LLM 推理引擎的内部机制。
 
 ## 项目结构一览
 
@@ -96,9 +96,9 @@ nanovllm 的核心架构可以概括为四个组件的协作：
 
 Scheduler 负责管理推理请求的生命周期，决定何时执行哪些请求。核心职责：
 
-- **请求队列管理**：维护等待、运行、完成三类请求队列
-- **抢占机制**：当内存不足时暂停低优先级请求，释放资源给高优先级请求
-- **调度策略**：优先调度新请求，其次恢复被抢占的请求
+- 请求队列管理：维护等待、运行、完成三类请求队列
+- 抢占机制：当内存不足时暂停低优先级请求，释放资源给高优先级请求
+- 调度策略：优先调度新请求，其次恢复被抢占的请求
 
 ```python
 class Scheduler:
@@ -118,13 +118,13 @@ class Scheduler:
 
 ### 2. BlockManager：KV Cache 块管理器
 
-这是 vLLM 的核心创新——将 KV Cache 组织为固定大小的"块"（Block），类似操作系统的虚拟内存管理。
+这是 vLLM 的核心创新：将 KV Cache 组织为固定大小的"块"（Block），类似操作系统的虚拟内存管理。
 
 每个 Block 存储固定数量的 token 的 KV Cache：
 
-- **物理块**：实际存储 KV Cache 的内存块
-- **逻辑块**：Sequence 的逻辑视图，映射到物理块
-- **引用计数**：支持共享前缀（如 system prompt）
+- 物理块：实际存储 KV Cache 的内存块
+- 逻辑块：Sequence 的逻辑视图，映射到物理块
+- 引用计数：支持共享前缀（如 system prompt）
 
 ```python
 class BlockManager:
@@ -151,9 +151,9 @@ class BlockManager:
 
 这种设计带来的优势：
 
-- **内存效率**：按需分配，避免预分配浪费
-- **共享前缀**：多个请求共享相同 prompt 时，只存储一份 KV Cache
-- **抢占恢复**：可以换出整块 KV Cache，稍后恢复
+- 内存效率：按需分配，避免预分配浪费
+- 共享前缀：多个请求共享相同 prompt 时，只存储一份 KV Cache
+- 抢占恢复：可以换出整块 KV Cache，稍后恢复
 
 ### 3. ModelRunner：模型执行器
 
@@ -188,7 +188,7 @@ class ModelRunner:
 
 ### 4. Sequence：序列数据结构
 
-Sequence 尴尬表示一个推理请求的生命周期：
+Sequence 表示一个推理请求的生命周期：
 
 ```python
 class Sequence:
@@ -295,14 +295,14 @@ class Attention:
         return self.o_proj(attn_output)
 ```
 
-关键在于 `_read_from_blocks()` 和 `_write_to_blocks()` 的实现——通过 block_tables 定位物理块中的 KV Cache，实现高效的内存访问。
+关键在于 `_read_from_blocks()` 和 `_write_to_blocks()` 的实现，通过 block_tables 定位物理块中的 KV Cache，实现高效的内存访问。
 
 ## 为什么值得学习 nanovllm
 
-1. **代码量少**：核心逻辑约 1000 行，易于整体把握
-2. **结构清晰**：每个组件职责明确，边界清晰
-3. **保留精髓**：Scheduler + BlockManager + PagedAttention 的核心架构完整
-4. **易于扩展**：可以在此基础上添加新特性（如 tensor parallelism）
+1. 代码量少：核心逻辑约 1000 行，易于整体把握
+2. 结构清晰：每个组件职责明确，边界清晰
+3. 保留精髓：Scheduler + BlockManager + PagedAttention 的核心架构完整
+4. 易于扩展：可以在此基础上添加新特性（如 tensor parallelism）
 
 相比之下，vLLM 源码有数万行，包含大量优化、多后端支持、分布式推理等复杂逻辑。nanovllm 是理解核心原理的最佳切入点。
 
@@ -310,24 +310,17 @@ class Attention:
 
 建议按以下顺序阅读源码：
 
-1. **从 llm.py 开始**：理解入口接口
-2. **阅读 sequence.py**：理解数据结构
-3. **深入 scheduler.py**：理解调度机制
-4. **研究 block_manager.py**：理解 KV Cache 管理
-5. **学习 model_runner.py**：理解执行流程
-6. **探索 layers/attention.py**：理解 PagedAttention 实现
+1. 从 llm.py 开始：理解入口接口
+2. 阅读 sequence.py：理解数据结构
+3. 深入 scheduler.py：理解调度机制
+4. 研究 block_manager.py：理解 KV Cache 管理
+5. 学习 model_runner.py：理解执行流程
+6. 探索 layers/attention.py：理解 PagedAttention 实现
 
 每个文件都可以独立理解，逐步构建完整的推理引擎心智模型。
 
 ## 总结
 
-Nano-vLLM 是学习 LLM 推理引擎的绝佳材料。通过本文的源码分析，我们理解了：
-
-- **用户接口设计**：简洁的入口封装复杂内核
-- **四组件架构**：Scheduler、BlockManager、ModelRunner、Sequence 协作
-- **KV Cache 管理**：Block-based 内存管理，类似操作系统虚拟内存
-- **执行流程**：调度-分配-执行-更新的循环
-
-掌握这些核心概念后，再去阅读 vLLM 完整源码，会发现复杂逻辑都是在这些核心机制上的扩展和优化。nanovllm 为我们提供了一个清晰的学习起点。
+Nano-vLLM 把 LLM 推理引擎的核心机制收在一份精简实现里：用户接口、四组件架构、KV Cache 的块管理和执行流程。掌握这些概念后再去读 vLLM 完整源码，会发现复杂逻辑都是在这些核心机制上的扩展和优化。
 
 > 项目地址：[github.com/Geeeek/nanovllm](https://github.com/Geeeek/nanovllm)

@@ -13,7 +13,7 @@ draft: false
 
 ## 问题场景
 
-在 AI 应用开发中，我们经常需要集成各种外部 API 服务——天气查询、新闻聚合、图片生成、数据检索等等。传统做法是：
+在 AI 应用开发中，我们经常需要集成各种外部 API 服务：天气查询、新闻聚合、图片生成、数据检索等等。传统做法是：
 
 1. 为每个 API 写适配代码
 2. 处理不同的认证方式（有的用 API Key，有的用 OAuth）
@@ -22,16 +22,16 @@ draft: false
 
 这种方式存在几个痛点：
 
-- **管理分散**：API 配置散落在代码和配置文件中，难以统一查看和维护
-- **认证多样**：不同 API 使用不同认证方式，每次都要重新适配
-- **测试困难**：需要额外工具测试 API 可用性，或写临时测试脚本
-- **AI 对接复杂**：要让 AI Agent 使用这些 API，需要额外开发工具层
+- 管理分散：API 配置散落在代码和配置文件中，难以统一查看和维护
+- 认证多样：不同 API 使用不同认证方式，每次都要重新适配
+- 测试困难：需要额外工具测试 API 可用性，或写临时测试脚本
+- AI 对接复杂：要让 AI Agent 使用这些 API，需要额外开发工具层
 
-**MCP（Model Context Protocol）** 的出现提供了一个统一解决方案。但问题来了：如何把现有的 REST API 快速转换为 MCP 服务？
+MCP（Model Context Protocol）的出现提供了一个统一解决方案。但问题来了：如何把现有的 REST API 快速转换为 MCP 服务？
 
 ## API2MCP：一站式解决方案
 
-**API2MCP** 是一个将各种 API 服务封装为标准 MCP 服务的工具。它提供了一个 Web 管理界面，让你可以：
+API2MCP 是一个将各种 API 服务封装为标准 MCP 服务的工具。它提供了一个 Web 管理界面，让你可以：
 
 - 添加、编辑、删除 API 配置
 - 测试 API 是否正常工作
@@ -44,9 +44,9 @@ draft: false
 
 API2MCP 基于 Python 生态构建：
 
-- **FastMCP**：用于实现 MCP 协议的核心框架
-- **FastAPI**：提供 Web 管理界面和 REST API
-- **Uvicorn**：高性能 ASGI 服务器
+- FastMCP：用于实现 MCP 协议的核心框架
+- FastAPI：提供 Web 管理界面和 REST API
+- Uvicorn：高性能 ASGI 服务器
 
 整个项目轻量、易部署，依赖简单。
 
@@ -80,7 +80,7 @@ API2MCP 支持五种常见认证方式：
 
 API2MCP 提供三种调用方式，适配不同使用场景：
 
-**REST API**
+REST API
 
 ```
 POST http://localhost:8000/api/{api_name}
@@ -92,7 +92,7 @@ POST http://localhost:8000/api/{api_name}
 - 前端直接调用
 - 测试验证
 
-**MCP SSE 流式**
+MCP SSE 流式
 
 ```
 http://localhost:8000/mcp/sse
@@ -104,7 +104,7 @@ Server-Sent Events 方式的 MCP 端点，适合：
 - 支持 SSE 的 AI 工具
 - 需要实时反馈的场景
 
-**MCP 标准输入输出**
+MCP 标准输入输出
 
 通过 stdin/stdout 运行 MCP 协议，适合：
 
@@ -271,27 +271,17 @@ apis:
 
 API2MCP 特别适合以下场景：
 
-**AI Agent 开发**
+AI Agent 开发：你正在开发一个需要调用多个外部 API 的 AI Agent。用 API2MCP 把这些 API 统一封装后，Agent 只需要对接 MCP 协议，不用处理各种认证、参数格式。
 
-你正在开发一个需要调用多个外部 API 的 AI Agent。用 API2MCP 把这些 API 统一封装后，Agent 只需要对接 MCP 协议，不用处理各种认证、参数格式。
+API 统一管理：团队内部有多个 API 服务，配置散落在各处。用 API2MCP 统一管理，可视化界面方便查看和维护。
 
-**API 统一管理**
+快速原型开发：需要在 AI 应用中快速集成某个新 API。用 API2MCP 添加配置后立即可用，省去编写适配代码的时间。
 
-团队内部有多个 API 服务，配置散落在各处。用 API2MCP 统一管理，可视化界面方便查看和维护。
-
-**快速原型开发**
-
-需要在 AI 应用中快速集成某个新 API。用 API2MCP 添加配置后立即可用，省去编写适配代码的时间。
-
-**学习 MCP 协议**
-
-想了解 MCP 协议的实际应用。API2MCP 提供了一个直观的示例：REST API → MCP 服务的转换过程。
+学习 MCP 协议：想了解 MCP 协议的实际应用。API2MCP 提供了一个直观的示例：REST API → MCP 服务的转换过程。
 
 ## 小结
 
-API2MCP 解决了一个实际问题：**如何让 AI Agent 便捷地调用现有 REST API**。它通过 MCP 协议实现了统一接口，同时提供了 Web 管理界面简化配置过程。
-
-如果你正在做 AI Agent 开发，或者需要管理多个 API 服务，API2MCP 是一个值得尝试的工具。开箱即用的预置 API、完善的测试功能、详细的日志，让它不仅是一个转换工具，也是一个 API 管理平台。
+API2MCP 解决的是如何让 AI Agent 便捷调用现有 REST API 的问题：用 MCP 协议统一接口，再用 Web 管理界面简化配置过程。如果你正在做 AI Agent 开发，或者需要管理多个 API 服务，它值得一试。
 
 项目地址：[GitHub - API2MCP](https://github.com/your-repo/api2mcp)
 
