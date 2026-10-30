@@ -1,0 +1,43 @@
+<svg width="1000" height="400" viewBox="0 0 1000 400" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="400" fill="#F8FAFC"/>
+  <defs>
+    <marker id="t3ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+
+  <text x="60" y="44" font-size="15" font-weight="700" fill="#0F172A">概率性决策与确定性执行的分界</text>
+
+  <rect x="60" y="80" width="380" height="240" rx="12" fill="#FFF7ED" stroke="#F59E0B" stroke-width="1.6"/>
+  <text x="76" y="110" font-size="12" font-weight="700" fill="#92400E">Agent 负责 · 概率性判断</text>
+  <circle cx="82" cy="141" r="3" fill="#F59E0B"/>
+  <text x="96" y="145" font-size="11.5" fill="#92400E">理解目标，问清缺的信息</text>
+  <circle cx="82" cy="179" r="3" fill="#F59E0B"/>
+  <text x="96" y="183" font-size="11.5" fill="#92400E">制定计划，安排顺序</text>
+  <circle cx="82" cy="217" r="3" fill="#F59E0B"/>
+  <text x="96" y="221" font-size="11.5" fill="#92400E">选择测试方案与参数</text>
+  <circle cx="82" cy="255" r="3" fill="#F59E0B"/>
+  <text x="96" y="259" font-size="11.5" fill="#92400E">解释结果，给优化建议</text>
+  <circle cx="82" cy="293" r="3" fill="#F59E0B"/>
+  <text x="96" y="297" font-size="11.5" fill="#92400E">判断值不值得重试</text>
+
+  <rect x="560" y="80" width="380" height="240" rx="12" fill="#ECFDF5" stroke="#10B981" stroke-width="1.6"/>
+  <text x="576" y="110" font-size="12" font-weight="700" fill="#065F46">工程系统负责 · 确定性保障</text>
+  <circle cx="582" cy="141" r="3" fill="#10B981"/>
+  <text x="596" y="145" font-size="11.5" fill="#065F46">校验参数是否合法</text>
+  <circle cx="582" cy="179" r="3" fill="#10B981"/>
+  <text x="596" y="183" font-size="11.5" fill="#065F46">管理资源，做隔离与排队</text>
+  <circle cx="582" cy="217" r="3" fill="#10B981"/>
+  <text x="596" y="221" font-size="11.5" fill="#065F46">执行测试，维护任务状态</text>
+  <circle cx="582" cy="255" r="3" fill="#10B981"/>
+  <text x="596" y="259" font-size="11.5" fill="#065F46">采集数据，计算指标</text>
+  <circle cx="582" cy="293" r="3" fill="#10B981"/>
+  <text x="596" y="297" font-size="11.5" fill="#065F46">幂等、重试上限、失败语义</text>
+
+  <line x1="500" y1="96" x2="500" y2="304" stroke="#CBD5E1" stroke-width="1.4" stroke-dasharray="5 5"/>
+  <rect x="452" y="184" width="96" height="34" rx="17" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.2"/>
+  <text x="500" y="206" font-size="11" font-weight="600" fill="#475569" text-anchor="middle">工具契约</text>
+
+  <text x="60" y="352" font-size="12" font-weight="700" fill="#0F172A">Agent 可以决定跑什么，但不能决定结果对不对。</text>
+  <text x="60" y="376" font-size="11" fill="#64748B">重试策略属于工程能力：次数上限、退避、幂等，都写在系统里；Agent 只回答「值不值得再试一次」。</text>
+</svg>

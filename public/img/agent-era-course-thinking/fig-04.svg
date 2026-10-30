@@ -1,0 +1,67 @@
+<svg width="1000" height="560" viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="560" fill="#F8FAFC"/>
+  <defs>
+    <marker id="t4ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="38" font-size="15" font-weight="700" fill="#0F172A">九步闭环：从目标提出到价值确认</text>
+
+  <rect x="60" y="70" width="240" height="86" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/>
+  <text x="180" y="96" font-size="12.5" font-weight="700" fill="#312E81" text-anchor="middle">1 目标提出</text>
+  <text x="180" y="118" font-size="10.5" fill="#4338CA" text-anchor="middle">用户给目标，不给步骤</text>
+  <text x="180" y="138" font-size="10" fill="#6366F1" text-anchor="middle">缺的信息必须问，不能编</text>
+
+  <rect x="380" y="70" width="240" height="86" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/>
+  <text x="500" y="96" font-size="12.5" font-weight="700" fill="#312E81" text-anchor="middle">2 目标结构化</text>
+  <text x="500" y="118" font-size="10.5" fill="#4338CA" text-anchor="middle">对象·变量·条件·指标</text>
+  <text x="500" y="138" font-size="10" fill="#6366F1" text-anchor="middle">用户模型 → 产品模型</text>
+
+  <rect x="700" y="70" width="240" height="86" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/>
+  <text x="820" y="96" font-size="12.5" font-weight="700" fill="#312E81" text-anchor="middle">3 任务规划</text>
+  <text x="820" y="118" font-size="10.5" fill="#4338CA" text-anchor="middle">拆子任务，定依赖</text>
+  <text x="820" y="138" font-size="10" fill="#6366F1" text-anchor="middle">并行还是串行按规则定</text>
+
+  <rect x="700" y="210" width="240" height="86" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="820" y="236" font-size="12.5" font-weight="700" fill="#075985" text-anchor="middle">4 执行准备</text>
+  <text x="820" y="258" font-size="10.5" fill="#0369A1" text-anchor="middle">资源·版本·配额·权限</text>
+  <text x="820" y="278" font-size="10" fill="#0284C7" text-anchor="middle">越权操作走审批</text>
+
+  <rect x="380" y="210" width="240" height="86" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="500" y="236" font-size="12.5" font-weight="700" fill="#075985" text-anchor="middle">5 任务执行</text>
+  <text x="500" y="258" font-size="10.5" fill="#0369A1" text-anchor="middle">调能力，不重写实现</text>
+  <text x="500" y="278" font-size="10" fill="#0284C7" text-anchor="middle">干活的是确定性内核</text>
+
+  <rect x="60" y="210" width="240" height="86" rx="10" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="180" y="236" font-size="12.5" font-weight="700" fill="#075985" text-anchor="middle">6 过程观测</text>
+  <text x="180" y="258" font-size="10.5" fill="#0369A1" text-anchor="middle">按真实状态调整计划</text>
+  <text x="180" y="278" font-size="10" fill="#0284C7" text-anchor="middle">不是发完请求就完事</text>
+
+  <rect x="60" y="350" width="240" height="86" rx="10" fill="#FEF2F2" stroke="#F43F5E" stroke-width="2"/>
+  <text x="180" y="376" font-size="12.5" font-weight="700" fill="#9F1239" text-anchor="middle">7 结果验证</text>
+  <text x="180" y="398" font-size="10.5" fill="#BE123C" text-anchor="middle">数据一致，样本足够</text>
+  <text x="180" y="418" font-size="10" fill="#F43F5E" text-anchor="middle">任务成功 ≠ 结论有效</text>
+
+  <rect x="380" y="350" width="240" height="86" rx="10" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5"/>
+  <text x="500" y="376" font-size="12.5" font-weight="700" fill="#065F46" text-anchor="middle">8 结果交付</text>
+  <text x="500" y="398" font-size="10.5" fill="#047857" text-anchor="middle">记录·配置·原始数据</text>
+  <text x="500" y="418" font-size="10" fill="#10B981" text-anchor="middle">不编造确定性</text>
+
+  <rect x="700" y="350" width="240" height="86" rx="10" fill="#ECFDF5" stroke="#10B981" stroke-width="1.5"/>
+  <text x="820" y="376" font-size="12.5" font-weight="700" fill="#065F46" text-anchor="middle">9 用户反馈</text>
+  <text x="820" y="398" font-size="10.5" fill="#047857" text-anchor="middle">追问·加测·当基线</text>
+  <text x="820" y="418" font-size="10" fill="#10B981" text-anchor="middle">开启下一轮任务</text>
+
+  <line x1="302" y1="113" x2="376" y2="113" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+  <line x1="622" y1="113" x2="696" y2="113" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+  <line x1="820" y1="158" x2="820" y2="206" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+  <line x1="698" y1="253" x2="624" y2="253" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+  <line x1="378" y1="253" x2="304" y2="253" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+  <line x1="180" y1="298" x2="180" y2="346" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+  <line x1="302" y1="393" x2="376" y2="393" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+  <line x1="622" y1="393" x2="696" y2="393" stroke="#64748B" stroke-width="1.6" marker-end="url(#t4ar)"/>
+
+  <path d="M 820 436 L 820 486 L 40 486 L 40 113 L 56 113" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#t4ar)"/>
+  <text x="500" y="512" font-size="10.5" fill="#64748B" text-anchor="middle">验证不通过 → 回到规划或准备阶段；用户反馈 → 开启下一轮任务</text>
+</svg>

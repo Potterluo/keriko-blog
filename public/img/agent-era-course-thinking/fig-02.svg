@@ -1,0 +1,56 @@
+<svg width="1000" height="520" viewBox="0 0 1000 520" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="520" fill="#F8FAFC"/>
+  <defs>
+    <marker id="t2ar" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+
+  <text x="120" y="42" font-size="15" font-weight="700" fill="#0F172A">一个平台，两类使用者，一层确定性内核</text>
+
+  <rect x="120" y="64" width="340" height="76" rx="12" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.5"/>
+  <text x="290" y="94" font-size="13" font-weight="700" fill="#334155" text-anchor="middle">人类用户</text>
+  <text x="290" y="116" font-size="11" fill="#64748B" text-anchor="middle">Web UI · CLI · 看板 · 报告</text>
+
+  <rect x="540" y="64" width="340" height="76" rx="12" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="710" y="94" font-size="13" font-weight="700" fill="#075985" text-anchor="middle">Agent 使用者</text>
+  <text x="710" y="116" font-size="11" fill="#0369A1" text-anchor="middle">MCP · Tool · API · 结构化状态</text>
+
+  <line x1="290" y1="140" x2="290" y2="186" stroke="#64748B" stroke-width="1.6" marker-end="url(#t2ar)"/>
+  <line x1="710" y1="140" x2="710" y2="186" stroke="#64748B" stroke-width="1.6" marker-end="url(#t2ar)"/>
+
+  <rect x="120" y="190" width="760" height="92" rx="12" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1.4"/>
+  <text x="136" y="214" font-size="11.5" font-weight="700" fill="#4338CA">能力层 · 对外契约（同一套能力，两条调用路径）</text>
+
+  <rect x="136" y="226" width="137" height="40" rx="8" fill="#F8FAFC" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="204" y="251" font-size="11" fill="#312E81" text-anchor="middle">校验配置</text>
+  <rect x="283" y="226" width="137" height="40" rx="8" fill="#F8FAFC" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="351" y="251" font-size="11" fill="#312E81" text-anchor="middle">创建任务</text>
+  <rect x="430" y="226" width="137" height="40" rx="8" fill="#F8FAFC" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="498" y="251" font-size="11" fill="#312E81" text-anchor="middle">查询状态</text>
+  <rect x="577" y="226" width="137" height="40" rx="8" fill="#F8FAFC" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="645" y="251" font-size="11" fill="#312E81" text-anchor="middle">取原始数据</text>
+  <rect x="724" y="226" width="137" height="40" rx="8" fill="#F8FAFC" stroke="#6366F1" stroke-width="1.2"/>
+  <text x="792" y="251" font-size="11" fill="#312E81" text-anchor="middle">生成报告</text>
+
+  <line x1="300" y1="282" x2="300" y2="318" stroke="#64748B" stroke-width="1.6" marker-end="url(#t2ar)"/>
+  <line x1="700" y1="282" x2="700" y2="318" stroke="#64748B" stroke-width="1.6" marker-end="url(#t2ar)"/>
+
+  <rect x="120" y="320" width="760" height="150" rx="12" fill="#ECFDF5" stroke="#A7F3D0" stroke-width="1.4"/>
+  <text x="136" y="346" font-size="11.5" font-weight="700" fill="#065F46">确定性工程层 · 对正确性负责</text>
+
+  <rect x="136" y="358" width="234" height="36" rx="8" fill="#F8FAFC" stroke="#10B981" stroke-width="1.2"/>
+  <text x="253" y="381" font-size="11" fill="#065F46" text-anchor="middle">调度</text>
+  <rect x="382" y="358" width="234" height="36" rx="8" fill="#F8FAFC" stroke="#10B981" stroke-width="1.2"/>
+  <text x="499" y="381" font-size="11" fill="#065F46" text-anchor="middle">资源隔离</text>
+  <rect x="628" y="358" width="234" height="36" rx="8" fill="#F8FAFC" stroke="#10B981" stroke-width="1.2"/>
+  <text x="745" y="381" font-size="11" fill="#065F46" text-anchor="middle">执行引擎</text>
+  <rect x="136" y="402" width="234" height="36" rx="8" fill="#F8FAFC" stroke="#10B981" stroke-width="1.2"/>
+  <text x="253" y="425" font-size="11" fill="#065F46" text-anchor="middle">数据采集</text>
+  <rect x="382" y="402" width="234" height="36" rx="8" fill="#F8FAFC" stroke="#10B981" stroke-width="1.2"/>
+  <text x="499" y="425" font-size="11" fill="#065F46" text-anchor="middle">指标计算</text>
+  <rect x="628" y="402" width="234" height="36" rx="8" fill="#F8FAFC" stroke="#10B981" stroke-width="1.2"/>
+  <text x="745" y="425" font-size="11" fill="#065F46" text-anchor="middle">结果存储</text>
+
+  <text x="120" y="494" font-size="11" fill="#64748B">交互可以有好几套，执行逻辑只有一套：为 Agent 复制一份测试实现，等于让「确定性」出现两个版本。</text>
+</svg>
