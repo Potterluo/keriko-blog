@@ -204,7 +204,7 @@ python scripts/video-frames.py --bvid BV15z4C6SEHT --part 9 --out .frames/p9 --i
 
 署名是硬要求：形象许可 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans)，作者约定二创作品在公开渠道须附项目地址。页脚一行、角色下方一行、`public/pet/README.md` 完整出处，改素材时都别删。
 
-改尺寸：窗框 `w-[200px]` / `h-[217px]`，视频用 `w-[230%]`、`left-[-68%]`、`top-[-12.6%]` 三个百分数放大平移。这三个数由角色包围盒（x=189..467、y=38..342）算出，等比缩放时不用改；改宽高比要重算。两个 video 都要跟着改。
+构图：109 段的包围盒差别很大（218×274 到 628×308），不能写死一个裁切框。组件读 manifest 里的 `cx/cy/bw/bh`，按高度适配（`scale = 252 / bh`）、中心对齐，角色高度恒定，宽道具居中溢出。窗框固定 `w-[240px]` / `h-[252px]`，改窗口尺寸要同步组件里的 `WIN_W` / `WIN_H` 两个常量。
 
 加新动作：从上游取 webm → 放 `public/pet/` → 在 `manifest.json` 加一条（`kind` 决定何时播）→ `README.md` 补一行。素材禁止商用，个人非商业博客可用。
 

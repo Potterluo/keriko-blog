@@ -27,15 +27,16 @@
   </div>
 
   <!--
-    源片是 640×360 的透明视频，角色只占中间一块（实测并集包围盒 x=189..467、y=38..342）。
-    窗口按这个包围盒裁切，视频放大平移让角色填满 200×217 的框。
-    两个 video 轮流上屏：一个在播，另一个在后台把下一段 load 好，切换时直接换，
-    否则改 src 会有一帧空档，看起来就是闪一下。改尺寸按 S=200/278 重算三个百分数。
+    源片是 640×360 的透明视频，角色只占中间一块，而且每段的构图不一样
+    （实测 109 段的包围盒从 218×274 到 628×308 都有）。
+    所以不写死裁切框，改成每段按 manifest 里的包围盒换算缩放与偏移，见 frame()。
+    窗口固定 240×252，按高度适配：角色高度恒定，宽的道具居中溢出。
+    两个 video 轮流出镜：正面在播，背面把下一段 load 好，切换时直接换人。
   -->
-  <div class="pointer-events-auto relative w-[200px]" data-pet-stage>
-    <div class="relative h-[217px] w-full overflow-hidden" data-pet-window>
+  <div class="pointer-events-auto relative w-[240px]" data-pet-stage>
+    <div class="relative h-[252px] w-full overflow-hidden" data-pet-window>
       <video
-        class="pointer-events-none absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none opacity-0 transition-opacity duration-75"
+        class="pointer-events-none absolute top-0 left-0 max-w-none opacity-0"
         data-pet-video
         muted
         playsinline
@@ -44,7 +45,7 @@
         disableRemotePlayback
         aria-hidden="true"></video>
       <video
-        class="pointer-events-none absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none opacity-0 transition-opacity duration-75"
+        class="pointer-events-none absolute top-0 left-0 max-w-none opacity-0"
         data-pet-video
         muted
         playsinline
@@ -73,11 +74,20 @@
 </style>
 
 <script>
-  type Entry = { file: string; label: string; kind: string; size: number };
+  type Entry = {
+    file: string;
+    label: string;
+    kind: string;
+    size: number;
+    cx?: number;
+    cy?: number;
+    bw?: number;
+    bh?: number;
+  };
 
   const MANIFEST = "/pet/manifest.json";
   const BASE = "/pet/";
-  const IDLE = "idle.webm";
+  const IDLE: Entry = { file: "idle.webm", label: "待机呼吸休闲", kind: "idle", size: 0 };
   const QUOTES = [
     "欢迎来玩，随便逛逛。",
     "这里的每一篇都是慢慢写的。",
@@ -88,6 +98,7 @@
     "拖着我甩出去，我会弹回来。",
     "文章里有问题，欢迎到 GitHub 提。",
   ];
+  const MEMES = Array.from({ length: 27 }, (_, i) => `/pet/memes/meme-${String(i + 1).padStart(2, "0")}.png`);
 
   const root = document.querySelector<HTMLElement>("[data-pet]");
   const stage = root?.querySelector<HTMLElement>("[data-pet-stage]");
@@ -103,13 +114,17 @@
     const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
     const supportsAlpha = !isSafari && videos[0].canPlayType('video/webm; codecs="vp9"') !== "";
 
+    const petRoot = root;
     let entries: Entry[] = [];
-    let active = 0; // 当前上屏的 video 下标
-    let prepared: { entry: Entry | null; el: HTMLVideoElement } | null = null;
+    let front = 0; // 正在出镜的那个
+    let frontFile = "";
+    let staged: { el: HTMLVideoElement; file: string } | null = null;
     let sleeping = false;
+    let lastMeme = -1;
     let idleTimer: number | undefined;
     let bubbleTimer: number | undefined;
     let squashTimer: number | undefined;
+    let tiltRaf = 0;
     let raf = 0;
     let recent: string[] = [];
 
@@ -118,10 +133,9 @@
     let vx = 0;
     let vy = 0;
     let dragging = false;
+    let hovering = false;
     let moved = false;
     let sample: { t: number; x: number; y: number }[] = [];
-
-    const petRoot = root;
 
     const clamp = (value: number, max: number) => Math.max(8, Math.min(value, max));
     const maxX = () => window.innerWidth - petRoot.offsetWidth - 8;
@@ -138,10 +152,7 @@
       localStorage.setItem(STORE_POS, JSON.stringify({ left: rect.left, top: rect.top }));
     };
 
-    // 表情包：27 张，说是说话时配图（dsh-pet 的碎碎念就这么干）。
-    // 不是每句都配，配了要等图片加载完再显示，避免先闪一个空框。
-    const MEMES = Array.from({ length: 27 }, (_, i) => `/pet/memes/meme-${String(i + 1).padStart(2, "0")}.png`);
-    let lastMeme = -1;
+    // —— 说话 ——
 
     const showMeme = () => {
       let index = Math.floor(Math.random() * MEMES.length);
@@ -163,7 +174,8 @@
       }, hold);
     };
 
-    // 挤压：同一时刻只跑一个，计时器叠起来会看起来一抖一抖
+    // —— 挤压（只作用在窗口层，和悬停倾斜分开，互不覆盖）——
+
     const squash = (sx: number, sy: number) => {
       window.clearTimeout(squashTimer);
       windowEl.style.transition = "transform 90ms cubic-bezier(0.3, 0.8, 0.4, 1)";
@@ -173,47 +185,64 @@
       }, 90);
     };
 
-    // —— 双缓冲播放 ——
+    // —— 播放：正面在播，背面预载，切换只换人 ——
 
-    const free = () => videos[1 - active];
+    const back = () => videos[1 - front];
 
-    const load = (el: HTMLVideoElement, file: string) => {
+    const loadInto = (el: HTMLVideoElement, file: string) => {
       if (el.dataset.clip === file) return;
       el.dataset.clip = file;
+      el.pause();
       el.src = BASE + file;
       el.load();
     };
 
-    const swapIn = (el: HTMLVideoElement, loop: boolean) => {
-      el.loop = loop;
-      void el.play().catch(() => {});
-      el.style.opacity = "1";
-      videos[active].style.opacity = "0";
-      active = videos.indexOf(el);
+    const WIN_W = 240;
+    const WIN_H = 252;
+
+    // 每段按自己的包围盒换算：按高度适配，中心对到窗口中心。
+    // 这样角色高度恒定，道具（花、蝴蝶、烟花）居中溢出，不会把角色切掉。
+    const frame = (el: HTMLVideoElement, entry: Entry) => {
+      const bh = entry.bh && entry.bh > 0 ? entry.bh : 274;
+      const cx = entry.cx ?? 320;
+      const cy = entry.cy ?? 195;
+      const scale = WIN_H / bh;
+      el.style.width = `${Math.round(640 * scale)}px`;
+      el.style.left = `${Math.round(WIN_W / 2 - cx * scale)}px`;
+      el.style.top = `${Math.round(WIN_H / 2 - cy * scale)}px`;
     };
 
-    const run = (entry: Entry, loop = false) => {
-      // 已经预载好的直接播，没有空档
-      if (prepared && prepared.entry?.file === entry.file) {
-        swapIn(prepared.el, loop);
-        prepared = null;
-        void prepareNext();
+    const show = (entry: Entry, loop = false) => {
+      if (frontFile === entry.file) {
+        videos[front].loop = loop;
+        void videos[front].play().catch(() => {});
         return;
       }
-      const el = free();
-      load(el, entry.file);
-      const begin = () => {
+      const el = staged?.file === entry.file && staged.el === back() ? staged.el : back();
+      if (el !== staged?.el || staged?.file !== entry.file) loadInto(el, entry.file);
+      staged = null;
+
+      const go = () => {
         if (el.dataset.clip !== entry.file) return;
-        swapIn(el, loop);
-        void prepareNext();
+        frame(el, entry);
+        el.loop = loop;
+        el.currentTime = 0;
+        void el.play().catch(() => {});
+        // 先让新的上屏，再把旧的停掉，中间不留空档
+        el.style.opacity = "1";
+        videos[front].style.opacity = "0";
+        videos[front].pause();
+        front = videos.indexOf(el);
+        frontFile = entry.file;
+        void stageNext();
       };
-      if (el.readyState >= 2) begin();
-      else el.addEventListener("canplay", begin, { once: true });
+      if (el.readyState >= 2) go();
+      else el.addEventListener("canplay", go, { once: true });
     };
 
-    const idle = () => run({ file: IDLE, label: "待机呼吸休闲", kind: "idle", size: 0 }, true);
+    const idle = () => show(IDLE, true);
 
-    const pool = () => entries.filter((e) => !["sleep", "drag"].includes(e.kind) && e.file !== IDLE);
+    const pool = () => entries.filter((e) => !["sleep", "drag"].includes(e.kind) && e.file !== IDLE.file);
 
     const pick = (candidates: Entry[], count = 1) => {
       const picked: Entry[] = [];
@@ -227,22 +256,26 @@
       return picked;
     };
 
-    // 把下一段装进空着的那个 video，点的时候才能瞬间切
-    const prepareNext = async () => {
+    // 把下一段悄悄装进背面，点的时候才不用等
+    const stageNext = async () => {
       if (!entries.length || sleeping) return;
-      const el = free();
+      const el = back();
       const [next, after] = pick(pool(), 2);
       if (!next) return;
-      load(el, next.file);
-      prepared = { entry: next, el };
+      if (staged?.el === el && staged.file === next.file) return;
+      if (el.dataset.clip === next.file) {
+        staged = { el, file: next.file };
+        return;
+      }
+      loadInto(el, next.file);
+      staged = { el, file: next.file };
       if (after) void fetch(BASE + after.file, { cache: "force-cache" }).catch(() => {});
     };
 
-    // —— 随机动作 ——
+    // 点一下优先用背面预载好的那段，没有才现抽
+    const takeNext = () => staged?.file ?? pick(pool())[0]?.file;
 
-    // 有预载好的就直接用那段，没有才现抽。点击和随机动作都走这里，
-    // 这样切换永远是「已经解码完的那一帧」，不会闪。
-    const takeNext = () => prepared?.entry ?? pick(pool())[0];
+    // —— 随机动作 ——
 
     const scheduleIdleAction = () => {
       window.clearTimeout(idleTimer);
@@ -250,8 +283,9 @@
       const wait = 6000 + Math.random() * 9000;
       idleTimer = window.setTimeout(() => {
         if (document.visibilityState === "visible" && !sleeping) {
-          const next = takeNext();
-          if (next) run(next);
+          const file = takeNext();
+          const entry = entries.find((e) => e.file === file);
+          if (entry) show(entry);
         }
         scheduleIdleAction();
       }, wait);
@@ -260,7 +294,7 @@
     const wake = () => {
       sleeping = false;
       const out = entries.find((e) => e.file === "sleep-out.webm");
-      if (out) run(out);
+      if (out) show(out);
       else idle();
       scheduleIdleAction();
     };
@@ -268,27 +302,24 @@
     const sleep = () => {
       sleeping = true;
       const inClip = entries.find((e) => e.file === "sleep-in.webm");
-      if (inClip) run(inClip);
+      if (inClip) show(inClip);
       else idle();
       say("那我睡一会儿…", 2600);
       window.clearTimeout(idleTimer);
     };
 
-    // —— 悬停：抬一点 + 朝鼠标方向偏，离开复位 ——
-
-    let hovering = false;
-    let tiltRaf = 0;
+    // —— 悬停：倾斜作用在 stage 上，和挤压互不干扰 ——
 
     const resetTilt = () => {
       window.cancelAnimationFrame(tiltRaf);
-      windowEl.style.transition = "transform 180ms ease-out";
-      windowEl.style.transform = "scale(1, 1) rotate(0deg) translate(0, 0)";
+      stage.style.transition = "transform 180ms ease-out";
+      stage.style.transform = "rotate(0deg) translateY(0)";
     };
 
     stage.addEventListener("pointerenter", () => {
       hovering = true;
-      windowEl.style.transition = "transform 160ms ease-out";
-      windowEl.style.transform = "scale(1.03) rotate(0deg) translate(0, -3px)";
+      stage.style.transition = "transform 160ms ease-out";
+      stage.style.transform = "translateY(-3px)";
     });
 
     stage.addEventListener("pointerleave", () => {
@@ -303,18 +334,17 @@
         window.cancelAnimationFrame(tiltRaf);
         tiltRaf = window.requestAnimationFrame(() => {
           const rect = stage.getBoundingClientRect();
-          const cx = rect.left + rect.width / 2;
-          const cy = rect.top + rect.height / 2;
-          // 归一化到 ±1，换算成 ±4 度倾斜和 ±6px 平移
-          const nx = Math.max(-1, Math.min(1, (event.clientX - cx) / (rect.width / 2 + 120)));
-          const ny = Math.max(-1, Math.min(1, (event.clientY - cy) / (rect.height / 2 + 120)));
-          windowEl.style.transform = `scale(1.03) rotate(${(nx * 4).toFixed(2)}deg) translate(${(nx * 6).toFixed(1)}px, ${(-3 + ny * 4).toFixed(1)}px)`;
+          const nx = Math.max(-1, Math.min(1, (event.clientX - (rect.left + rect.width / 2)) / (rect.width / 2 + 120)));
+          const ny = Math.max(
+            -1,
+            Math.min(1, (event.clientY - (rect.top + rect.height / 2)) / (rect.height / 2 + 120)),
+          );
+          stage.style.transform = `rotate(${(nx * 3).toFixed(2)}deg) translateY(${(-3 + ny * 2).toFixed(1)}px)`;
         });
       },
       { passive: true },
     );
 
-    // 悬停时按 S 睡觉（dsh-pet 的键位），Esc 叫醒
     window.addEventListener("keydown", (event) => {
       if (!hovering) return;
       if (event.key === "s" || event.key === "S") {
@@ -344,7 +374,6 @@
 
     stage.addEventListener("pointermove", (event) => {
       if (!dragging) return;
-      // 按「上一次的位置」算增量，用起点算会越拖越快
       const last = sample[sample.length - 1];
       const dx = event.clientX - last.x;
       const dy = event.clientY - last.y;
@@ -377,10 +406,10 @@
         return;
       }
 
-      // 点一下：Q 弹 + 用预载好的那段（全量池子里随机抽的）
       squash(1.1, 0.9);
-      const next = takeNext();
-      if (next) run(next);
+      const file = takeNext();
+      const entry = entries.find((e) => e.file === file);
+      if (entry) show(entry);
       say(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
     });
 
@@ -419,7 +448,6 @@
           y = maxY();
           vy = -vy * bounce * 0.85;
           vx *= 0.92;
-          // 落地只在速度够大时压一下，每帧都压会看起来抖
           if (Math.abs(vy) > 0.35 && ts - lastImpact > 120) {
             squash(1.14, 0.86);
             lastImpact = ts;
@@ -441,11 +469,13 @@
       raf = window.requestAnimationFrame(step);
     };
 
+    // 只有出镜的那个播完才继续，背面那些残留的 ended 一律不管
     videos.forEach((el) => {
       el.addEventListener("ended", () => {
+        if (el !== videos[front]) return;
         if (sleeping) {
           const loopClip = entries.find((e) => e.file === "sleep-loop.webm");
-          if (loopClip) run(loopClip, true);
+          if (loopClip) show(loopClip, true);
           return;
         }
         idle();
@@ -480,18 +510,21 @@
       }
       apply();
 
-      load(videos[0], IDLE);
-      videos[0].loop = true;
-      videos[0].style.opacity = "1";
-      active = 0;
-      void videos[0].play().catch(() => {});
+      const el = videos[0];
+      loadInto(el, IDLE.file);
+      frame(el, IDLE);
+      el.loop = true;
+      el.style.opacity = "1";
+      void el.play().catch(() => {});
+      front = 0;
+      frontFile = IDLE.file;
 
       try {
         entries = await (await fetch(MANIFEST, { cache: "force-cache" })).json();
       } catch {
         entries = [];
       }
-      void prepareNext();
+      void stageNext();
       scheduleIdleAction();
     };
 
