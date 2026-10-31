@@ -32,3 +32,6 @@ pnpm-debug.log*
 
 # cloudflare wrangler
 .wrangler/
+
+# local scratch (audio, transcripts, probe scripts)
+.transcribe/
