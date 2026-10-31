@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" role="img" aria-label="Agent 后端的三层与装配根">
+  <defs>
+    <marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+    <marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6366F1"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="520" fill="#F8FAFC"/>
+
+  <text x="40" y="40" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="15" font-weight="600" fill="#0F172A">谁依赖谁：往左是使用，往上是实现</text>
+  <text x="40" y="64" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#64748B">应用层只认接口，适配层负责兑现，装配根负责接线</text>
+
+  <!-- 领域层（左列） -->
+  <rect x="40" y="96" width="240" height="388" rx="10" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.5"/>
+  <text x="60" y="124" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#4338CA">领域层</text>
+  <text x="60" y="144" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#6366F1">定义系统自己的语言</text>
+
+  <rect x="60" y="162" width="200" height="52" rx="8" fill="#FFFFFF" stroke="#C7D2FE"/>
+  <text x="76" y="183" font-family="system-ui,sans-serif" font-size="11.5" fill="#4338CA">Session</text>
+  <text x="76" y="201" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#6366F1">对话 = id + 消息列表</text>
+
+  <rect x="60" y="226" width="200" height="52" rx="8" fill="#FFFFFF" stroke="#C7D2FE"/>
+  <text x="76" y="247" font-family="system-ui,sans-serif" font-size="11.5" fill="#4338CA">Tool</text>
+  <text x="76" y="265" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#6366F1">能被模型点名，也能执行</text>
+
+  <rect x="60" y="290" width="200" height="52" rx="8" fill="#FFFFFF" stroke="#C7D2FE"/>
+  <text x="76" y="311" font-family="system-ui,sans-serif" font-size="11.5" fill="#4338CA">Context</text>
+  <text x="76" y="329" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#6366F1">发给模型的那一包东西</text>
+
+  <text x="60" y="372" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#4338CA">这一层不认识任何外部协议。</text>
+  <text x="60" y="390" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#4338CA">模型换一家、存储换一种，</text>
+  <text x="60" y="408" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#4338CA">这里的定义都不用改。</text>
+
+  <!-- 装配根 -->
+  <rect x="340" y="84" width="620" height="52" rx="10" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.6"/>
+  <text x="360" y="106" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#B45309">装配根</text>
+  <text x="360" y="125" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#92400E">整个系统里唯一知道所有具体类的地方，换模型、换存储、换入口都只改它</text>
+
+  <!-- 应用层 -->
+  <rect x="340" y="156" width="620" height="120" rx="10" fill="#FFFFFF" stroke="#0284C7" stroke-width="1.5"/>
+  <text x="360" y="180" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0369A1">应用层</text>
+  <text x="360" y="198" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#64748B">编排流程，只依赖接口</text>
+  <rect x="360" y="212" width="170" height="34" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+  <text x="445" y="233" text-anchor="middle" font-family="system-ui,sans-serif" font-size="11" fill="#0369A1">AgentService</text>
+  <rect x="546" y="212" width="140" height="34" rx="8" fill="#F1F5F9" stroke="#CBD5E1"/>
+  <text x="616" y="233" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#475569">SessionStore</text>
+  <rect x="700" y="212" width="130" height="34" rx="8" fill="#F1F5F9" stroke="#CBD5E1"/>
+  <text x="765" y="233" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#475569">ModelClient</text>
+  <rect x="844" y="212" width="96" height="34" rx="8" fill="#F1F5F9" stroke="#CBD5E1"/>
+  <text x="892" y="233" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#475569">两个角色</text>
+  <text x="360" y="264" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">后三个是接口和协议，真正的实现不在这一层</text>
+
+  <!-- 适配层 -->
+  <rect x="340" y="320" width="620" height="164" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+  <text x="360" y="344" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#047857">适配层</text>
+  <text x="360" y="362" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#64748B">把外部的东西翻译成系统自己的语言</text>
+  <rect x="360" y="376" width="180" height="30" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="450" y="395" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#047857">JsonlSessionStore</text>
+  <rect x="552" y="376" width="150" height="30" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="627" y="395" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#047857">OpenAI 客户端</text>
+  <rect x="714" y="376" width="170" height="30" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="799" y="395" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#047857">Anthropic 客户端</text>
+  <rect x="360" y="418" width="180" height="30" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="450" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#047857">Google 客户端</text>
+  <rect x="552" y="418" width="150" height="30" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="627" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#047857">HTTP 适配器</text>
+  <rect x="714" y="418" width="170" height="30" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="799" y="437" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10.5" fill="#047857">命令行适配器</text>
+  <text x="360" y="468" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">新增一家协议，只在这里加一个类</text>
+
+  <!-- 箭头：装配根 -> 应用层 -->
+  <line x1="650" y1="136" x2="650" y2="154" stroke="#64748B" stroke-width="1.4" marker-end="url(#d1)"/>
+  <text x="660" y="150" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">创建并注入</text>
+
+  <!-- 箭头：装配根 -> 适配层（走左侧空隙） -->
+  <path d="M340 130 L306 130 L306 402 L338 402" fill="none" stroke="#64748B" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#d1)"/>
+
+  <!-- 箭头：适配层 -> 应用层（实现接口） -->
+  <line x1="900" y1="320" x2="900" y2="278" stroke="#10B981" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#d1)"/>
+  <text x="808" y="300" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#047857">实现接口</text>
+
+  <!-- 箭头：应用层 -> 领域层（使用） -->
+  <line x1="338" y1="216" x2="284" y2="216" stroke="#6366F1" stroke-width="1.4" marker-end="url(#d2)"/>
+  <text x="286" y="206" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#6366F1">使用</text>
+</svg>
