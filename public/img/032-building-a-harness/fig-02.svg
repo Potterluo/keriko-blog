@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 450" width="1000" height="450" role="img" aria-label="工具调用的三道闸">
+  <defs>
+    <marker id="k2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="450" fill="#F8FAFC"/>
+
+  <text x="40" y="40" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="15" font-weight="600" fill="#0F172A">模型想动手，先过三道闸</text>
+  <text x="40" y="64" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#64748B">顺序按成本排：代码检查最便宜，人最慢，模型审核花一次调用</text>
+
+  <!-- 入口 -->
+  <rect x="40" y="84" width="820" height="42" rx="8" fill="#F1F5F9" stroke="#CBD5E1"/>
+  <text x="60" y="110" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">模型返回一次 tool_call，比如 run_shell { command: "rm -rf build" }</text>
+
+  <!-- 闸 1 -->
+  <rect x="40" y="140" width="820" height="70" rx="8" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+  <text x="60" y="164" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#047857">闸 1 · 代码校验</text>
+  <text x="60" y="185" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">工具存在吗、参数合 schema 吗、路径有没有跑出仓库根</text>
+  <text x="60" y="202" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">成本几乎为零 · 拦不住：语法都对但语义有害的调用</text>
+
+  <!-- 闸 2 -->
+  <rect x="40" y="222" width="820" height="70" rx="8" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="60" y="246" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#B45309">闸 2 · 人工批准</text>
+  <text x="60" y="267" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">标了 risky 的三个写操作停下来问：ask 逐次问、auto 放行、never 禁写</text>
+  <text x="60" y="284" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">成本一次打断 · 拦不住：没人值守时会卡住</text>
+
+  <!-- 闸 3 -->
+  <rect x="40" y="304" width="820" height="70" rx="8" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.5"/>
+  <text x="60" y="328" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#4338CA">闸 3 · 模型审核</text>
+  <text x="60" y="349" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">另一个模型只看任务、最近工具结果和这一次调用，回一个 JSON 判断</text>
+  <text x="60" y="366" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">成本一次推理 · 拦得住：为了修测试去删测试</text>
+
+  <!-- 出口 -->
+  <rect x="40" y="388" width="820" height="40" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+  <text x="60" y="413" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#0369A1">全过 → 执行并按 tool_call_id 回填；任一拒绝 → 把原因回填给模型，让它自己改策略</text>
+
+  <!-- 成本轴 -->
+  <line x1="892" y1="142" x2="892" y2="372" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#k2)"/>
+  <text x="904" y="230" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">成本</text>
+  <text x="904" y="250" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">递增</text>
+</svg>
