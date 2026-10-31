@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" role="img" aria-label="契约先落地再并行填血肉">
+  <defs>
+    <marker id="h1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="420" fill="#F8FAFC"/>
+
+  <text x="40" y="40" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="15" font-weight="600" fill="#0F172A">契约先提交，才谈得上并行</text>
+  <text x="40" y="64" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#64748B">三个提交把接口钉死，两条支线才能各写各的，装配根最后收口</text>
+
+  <!-- 阶段一 -->
+  <rect x="40" y="92" width="280" height="150" rx="10" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.5"/>
+  <text x="60" y="116" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#4338CA">我先写：契约</text>
+  <rect x="60" y="128" width="240" height="30" rx="6" fill="#EEF2FF" stroke="#C7D2FE"/>
+  <text x="76" y="148" font-family="system-ui,sans-serif" font-size="10.5" fill="#4338CA">chore: 初始化项目骨架</text>
+  <rect x="60" y="164" width="240" height="30" rx="6" fill="#EEF2FF" stroke="#C7D2FE"/>
+  <text x="76" y="184" font-family="system-ui,sans-serif" font-size="10.5" fill="#4338CA">feat(domain)：Session · Tool · Context</text>
+  <rect x="60" y="200" width="240" height="30" rx="6" fill="#EEF2FF" stroke="#C7D2FE"/>
+  <text x="76" y="220" font-family="system-ui,sans-serif" font-size="10.5" fill="#4338CA">feat(ports)：三个协议</text>
+
+  <!-- 箭头 -->
+  <line x1="324" y1="167" x2="384" y2="167" stroke="#64748B" stroke-width="1.5" marker-end="url(#h1)"/>
+
+  <!-- 阶段二：并行 -->
+  <rect x="390" y="92" width="300" height="150" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+  <text x="410" y="116" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#047857">两个子 Agent 并行</text>
+  <rect x="410" y="128" width="260" height="44" rx="6" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="426" y="146" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#047857">子 Agent A：tools.py</text>
+  <text x="426" y="162" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">六个工具 + 五道闸 + 64 个用例</text>
+  <rect x="410" y="180" width="260" height="44" rx="6" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="426" y="198" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#047857">子 Agent B：context.py · session.py</text>
+  <text x="426" y="214" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">削减策略 + 存储 + 33 个用例</text>
+
+  <line x1="694" y1="167" x2="754" y2="167" stroke="#64748B" stroke-width="1.5" marker-end="url(#h1)"/>
+
+  <!-- 阶段三：装配根 -->
+  <rect x="760" y="92" width="200" height="150" rx="10" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="780" y="116" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#B45309">装配根收口</text>
+  <text x="780" y="142" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">service 串三道闸</text>
+  <text x="780" y="162" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">runtime 接线</text>
+  <text x="780" y="182" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">cli 做前端</text>
+  <text x="780" y="210" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">16 个提交，101 个测试</text>
+
+  <!-- 底部：文件归属 -->
+  <rect x="40" y="270" width="920" height="112" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="60" y="294" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0F172A">并行的前提是文件不重叠</text>
+  <text x="60" y="318" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">子 Agent A 只碰 tools.py 与它的测试；子 Agent B 只碰 context.py、session.py。</text>
+  <text x="60" y="338" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">漏掉的那一处是 roles.py：谁都没写清楚归属，结果一边重写、另一边正在跑测试，</text>
+  <text x="60" y="358" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#F43F5E">短暂出现 NameError: name 'ToolResult' is not defined。</text>
+</svg>
