@@ -43,7 +43,7 @@ const { title = aboutConfig.pageTitle, description = aboutConfig.pageDescription
       <div class="col-span-3">
         <p class="m-0 text-xs font-bold text-accent-strong">{aboutConfig.hero.eyebrow}</p>
         <h1 class="mt-4 mb-0 text-profile-title font-extrabold text-text">{aboutConfig.hero.title}</h1>
-        <div class="mt-5 max-w-3xl text-base leading-8 text-text-soft">
+        <div class="mt-5 max-w-reading text-base leading-8 text-text-soft">
           {
             aboutConfig.hero.description.map((paragraph, index) => (
               <p class:list={["m-0", index > 0 && "mt-1"]}>{paragraph}</p>
