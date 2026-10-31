@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 480" width="1000" height="480" role="img" aria-label="一次真实运行的时间线">
+  <defs>
+    <marker id="t1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="480" fill="#F8FAFC"/>
+
+  <text x="40" y="40" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="15" font-weight="600" fill="#0F172A">一次真实运行：5 次决策，7 次审核，18 秒</text>
+  <text x="40" y="64" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#64748B">输入是一句话，输出是两行 diff；中间每一步都经过三道闸</text>
+
+  <rect x="40" y="92" width="180" height="64" rx="10" fill="#F1F5F9" stroke="#CBD5E1"/>
+  <text x="60" y="116" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#334155">用户输入</text>
+  <text x="60" y="136" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#64748B">「跑测试，把失败的</text>
+  <text x="60" y="150" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#64748B">修好。只改 calc.py」</text>
+
+  <line x1="224" y1="124" x2="254" y2="124" stroke="#64748B" stroke-width="1.3" marker-end="url(#t1)"/>
+
+  <rect x="260" y="92" width="130" height="64" rx="10" fill="#EEF2FF" stroke="#6366F1"/>
+  <text x="278" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" font-weight="600" fill="#4338CA">决策 1</text>
+  <text x="278" y="132" font-family="system-ui,sans-serif" font-size="9.5" fill="#475569">list_files</text>
+  <text x="278" y="146" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="9.5" fill="#94A3B8">先看仓库长什么样</text>
+
+  <line x1="394" y1="124" x2="424" y2="124" stroke="#64748B" stroke-width="1.3" marker-end="url(#t1)"/>
+
+  <rect x="430" y="92" width="150" height="64" rx="10" fill="#EEF2FF" stroke="#6366F1"/>
+  <text x="448" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" font-weight="600" fill="#4338CA">决策 2</text>
+  <text x="448" y="132" font-family="system-ui,sans-serif" font-size="9.5" fill="#475569">read ×2 + run_shell</text>
+  <text x="448" y="146" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="9.5" fill="#94A3B8">源码、测试各读一遍</text>
+
+  <line x1="584" y1="124" x2="614" y2="124" stroke="#64748B" stroke-width="1.3" marker-end="url(#t1)"/>
+
+  <rect x="620" y="92" width="150" height="64" rx="10" fill="#EEF2FF" stroke="#6366F1"/>
+  <text x="638" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" font-weight="600" fill="#4338CA">决策 3</text>
+  <text x="638" y="132" font-family="system-ui,sans-serif" font-size="9.5" fill="#475569">patch ×2</text>
+  <text x="638" y="146" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="9.5" fill="#94A3B8">附诊断文字</text>
+
+  <line x1="774" y1="124" x2="804" y2="124" stroke="#64748B" stroke-width="1.3" marker-end="url(#t1)"/>
+
+  <rect x="810" y="92" width="140" height="64" rx="10" fill="#EEF2FF" stroke="#6366F1"/>
+  <text x="828" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" font-weight="600" fill="#4338CA">决策 4 / 5</text>
+  <text x="828" y="132" font-family="system-ui,sans-serif" font-size="9.5" fill="#475569">run_shell → 总结</text>
+  <text x="828" y="146" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="9.5" fill="#94A3B8">验证后收尾</text>
+
+  <line x1="940" y1="180" x2="940" y2="180" stroke="none"/>
+
+  <rect x="40" y="172" width="920" height="196" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <text x="60" y="198" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#0F172A">日志与产物（按时间顺序）</text>
+  <text x="60" y="222" font-family="Consolas,monospace" font-size="10.5" fill="#B91C1C">FF  →  两个用例失败（run_shell: python -m unittest）</text>
+  <text x="60" y="242" font-family="Consolas,monospace" font-size="10.5" fill="#475569">def add(a, b): return a - b   ← read_file: calc.py</text>
+  <text x="60" y="262" font-family="Consolas,monospace" font-size="10.5" fill="#475569">assertEqual(add(2, 3), 5)     ← read_file: test_calc.py</text>
+  <text x="60" y="282" font-family="Consolas,monospace" font-size="10.5" fill="#B45309">patched calc.py (1 replacement)  ×2  ← patch_file 过审后执行</text>
+  <text x="60" y="302" font-family="Consolas,monospace" font-size="10.5" fill="#047857">..  →  Ran 2 tests ... OK      ← run_shell 再跑一遍</text>
+  <text x="60" y="322" font-family="Consolas,monospace" font-size="10.5" fill="#334155">diff: return a - b    → a + b</text>
+  <text x="60" y="342" font-family="Consolas,monospace" font-size="10.5" fill="#334155">diff: /len(values) - 1 → /len(values)</text>
+  <text x="60" y="360" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">改动只落在 calc.py 的两行，满足任务约束；每一步都留在会话文件里</text>
+
+  <rect x="40" y="384" width="920" height="72" rx="10" fill="#F1F5F9" stroke="#CBD5E1"/>
+  <text x="60" y="408" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#334155">成本账</text>
+  <text x="60" y="430" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">模型调用 12 次（5 次决策 + 7 次审核），墙钟 18 秒，工具全部本地执行</text>
+  <text x="60" y="448" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">工作记忆记下了 calc.py 和 test_calc.py，以及 5 条工具笔记</text>
+</svg>
