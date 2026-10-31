@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 380" width="1000" height="380" role="img" aria-label="大模型的四个接口">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="380" fill="#F8FAFC"/>
+
+  <text x="40" y="42" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="15" font-weight="600" fill="#0F172A">一个模型，四个接口</text>
+  <text x="40" y="66" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="11.5" fill="#64748B">每一格都只需要回答两个问题：输入是什么，输出多长</text>
+
+  <!-- box 1 -->
+  <g>
+    <rect x="40" y="110" width="200" height="150" rx="10" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.5"/>
+    <text x="60" y="140" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#4338CA">① 分词</text>
+    <text x="60" y="168" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">飞天闪客，你好</text>
+    <text x="60" y="190" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">↓ 切成 token</text>
+    <text x="60" y="212" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">[ 314, 8821, 99 ]</text>
+    <text x="60" y="240" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">输出：一串整数 ID</text>
+  </g>
+
+  <line x1="240" y1="185" x2="280" y2="185" stroke="#64748B" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- box 2 -->
+  <g>
+    <rect x="280" y="110" width="200" height="150" rx="10" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.5"/>
+    <text x="300" y="140" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#4338CA">② 嵌入矩阵</text>
+    <text x="300" y="168" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">50257 × 768 的矩阵</text>
+    <text x="300" y="190" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">按 ID 取第几行</text>
+    <text x="300" y="212" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">随机初始化，跟着训</text>
+    <text x="300" y="240" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">输出：每个词 768 维</text>
+  </g>
+
+  <line x1="480" y1="185" x2="520" y2="185" stroke="#64748B" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- box 3 -->
+  <g>
+    <rect x="520" y="110" width="200" height="150" rx="10" fill="#FFFFFF" stroke="#0284C7" stroke-width="1.5"/>
+    <text x="540" y="140" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#0369A1">③ 神经网络</text>
+    <text x="540" y="168" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">768 → 3072 → 768</text>
+    <text x="540" y="190" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">升维、降维、堆 N 层</text>
+    <text x="540" y="212" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">夹着注意力一起堆</text>
+    <text x="540" y="240" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">输出：还是 768 维</text>
+  </g>
+
+  <line x1="720" y1="185" x2="760" y2="185" stroke="#64748B" stroke-width="1.5" marker-end="url(#a1)"/>
+
+  <!-- box 4 -->
+  <g>
+    <rect x="760" y="110" width="200" height="150" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+    <text x="780" y="140" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#047857">④ 投影 + softmax</text>
+    <text x="780" y="168" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">768 → 50257</text>
+    <text x="780" y="190" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">纯线性，无激活</text>
+    <text x="780" y="212" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#334155">再归一成概率</text>
+    <text x="780" y="240" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">输出：每个词一个概率</text>
+  </g>
+
+  <!-- bottom note -->
+  <rect x="40" y="292" width="920" height="56" rx="10" fill="#EEF2FF" stroke="#C7D2FE" stroke-width="1"/>
+  <text x="60" y="316" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#3730A3">中间两格的维度之所以都保持 768，是为了能首尾相接堆叠；一旦某一层改了长度，就没法直接加残差，也没法无脑堆。</text>
+  <text x="60" y="336" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#3730A3">所以「定义输入输出」不只是起名字，它决定了这个零件能不能插进流水线。</text>
+</svg>

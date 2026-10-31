@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 548" width="1000" height="548" role="img" aria-label="从大模型到 Agent 的五层叠加">
+  <rect width="1000" height="548" fill="#F8FAFC"/>
+
+  <text x="40" y="42" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="15" font-weight="600" fill="#0F172A">每往上加一层，都是为了补一个具体的缺口</text>
+  <text x="40" y="66" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#64748B">底座是只会接龙的大模型，上面的名词都长在缺口上</text>
+
+  <!-- 第 5 层 -->
+  <g>
+    <rect x="40" y="90" width="640" height="58" rx="10" fill="#FFFFFF" stroke="#F43F5E" stroke-width="1.4"/>
+    <text x="60" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#BE123C">⑤ 并行分工</text>
+    <text x="60" y="135" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11" fill="#475569">subagent：子任务的上下文不回流主流程</text>
+    <text x="700" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">缺口：任务一长，主上下文先爆</text>
+    <text x="700" y="134" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">本质只是做了一层隔离</text>
+  </g>
+
+  <!-- 第 4 层 -->
+  <g>
+    <rect x="40" y="162" width="640" height="58" rx="10" fill="#FFFFFF" stroke="#F59E0B" stroke-width="1.4"/>
+    <text x="60" y="186" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#B45309">④ 流程固化</text>
+    <text x="60" y="207" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11" fill="#475569">workflow · skill.md：把稳定的步骤写成脚本</text>
+    <text x="700" y="186" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">缺口：每次自由发挥，不稳且费 token</text>
+    <text x="700" y="206" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">skill 就是把「先读说明」写死到一个位置</text>
+  </g>
+
+  <!-- 第 3 层 -->
+  <g>
+    <rect x="40" y="234" width="640" height="58" rx="10" fill="#FFFFFF" stroke="#0284C7" stroke-width="1.4"/>
+    <text x="60" y="258" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0369A1">③ 工具协议</text>
+    <text x="60" y="279" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11" fill="#475569">function calling · MCP：约定调用格式与工具服务</text>
+    <text x="700" y="258" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">缺口：自然语言没法被程序解析</text>
+    <text x="700" y="278" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">MCP 让工具从主程序里解耦出来</text>
+  </g>
+
+  <!-- 第 2 层 -->
+  <g>
+    <rect x="40" y="306" width="640" height="58" rx="10" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.4"/>
+    <text x="60" y="330" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#4338CA">② 外部信息</text>
+    <text x="60" y="351" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11" fill="#475569">web search · RAG：把参数以外的信息塞进上下文</text>
+    <text x="700" y="330" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">缺口：不知道最新的事，只能胡说</text>
+    <text x="700" y="350" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">RAG 用的是向量检索，不是关键词</text>
+  </g>
+
+  <!-- 第 1 层 -->
+  <g>
+    <rect x="40" y="378" width="640" height="58" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.4"/>
+    <text x="60" y="402" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#047857">① 对话</text>
+    <text x="60" y="423" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11" fill="#475569">prompt · context · memory：把一问一答撑成多轮</text>
+    <text x="700" y="402" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">缺口：说完就结束，不能追问</text>
+    <text x="700" y="422" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#94A3B8">memory 就是把历史对话塞回上下文</text>
+  </g>
+
+  <!-- 底座 -->
+  <g>
+    <rect x="40" y="450" width="640" height="58" rx="10" fill="#F1F5F9" stroke="#64748B" stroke-width="1.6"/>
+    <text x="60" y="474" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#0F172A">大语言模型</text>
+    <text x="60" y="495" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11" fill="#475569">唯一会做的事：根据上文输出下一个 token</text>
+    <text x="700" y="474" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#64748B">一切从这里开始</text>
+    <text x="700" y="494" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#64748B">上面五层没有一层改变这个事实</text>
+  </g>
+</svg>
