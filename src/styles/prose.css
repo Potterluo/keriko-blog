@@ -176,6 +176,17 @@
     border-radius: var(--radius-lg);
   }
 
+  .prose-content .math-display {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    text-align: center;
+  }
+
+  .prose-content .math-display .katex-display {
+    margin: 0;
+  }
+
   .prose-content table {
     width: 100%;
     border-collapse: separate;
