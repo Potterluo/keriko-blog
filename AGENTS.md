@@ -195,6 +195,8 @@ python scripts/video-frames.py --bvid BV15z4C6SEHT --part 9 --out .frames/p9 --i
 | 播放   | 两个 `<video>` 双缓冲：一个在播，另一个在后台 `load` 下一段，切换只换 opacity，不改正在播的 src       |
 | 点击   | 用预载好的那段（从全量池子随机抽），所以点下去是瞬间换，不会闪                                        |
 | 双击   | 睡觉：`sleep-in` → 循环 `sleep-loop` → 点一下 `sleep-out` 醒来                                        |
+| 说话   | 气泡 + 表情包（`public/pet/memes/`，27 张，约 75% 概率配图），一起显示一起消失                        |
+| 悬停   | 抬 3px、放大 1.03，并朝鼠标方向倾斜 ±4 度做视线跟随；悬停时按 `S` 睡觉、`Esc` 叫醒                    |
 | 物理   | 拖动记速度，松手后重力 + 撞墙反弹 + 摩擦；挤压动画同一时刻只跑一个                                    |
 | 状态   | `localStorage` 只存位置 `pet:pos`；没有关闭按钮，也不做隐藏                                           |
 | 降级   | Safari 不认 webm 的 alpha，直接不挂载；`prefers-reduced-motion` 下不随机动作；`tablet` 以下不显示     |

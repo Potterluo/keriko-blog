@@ -24,6 +24,10 @@
 | `balance` / `work`                                   | 12   | 上游用于余额与工作状态，这里也进了随机池 |
 | `drag`                                               | 1    | 拖拽反馈，暂未用                         |
 
+## 表情包
+
+`memes/meme-01.png` … `meme-27.png`，384×384，同样取自上游的 `dsh-pet/assets/memes/`，共 27 张。说话时按概率随机配一张（大肥鱼自己的梗图，部分带字）。
+
 ## 署名与许可
 
 - 素材仓库：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（**素材禁止商用**）

@@ -9,12 +9,21 @@
   data-pet-ready
   transition:persist="blog-pet"
 >
-  <div
-    class="rounded-2xl mb-2 max-w-56 border border-border bg-panel px-3 py-2 text-xs leading-relaxed text-text-soft shadow-sm"
-    data-pet-bubble
-    hidden
-  >
-    <span data-pet-bubble-text></span>
+  <!-- 说话时一起出气泡和表情包：表情包贴右侧，像 dsh-pet 的碎碎念 -->
+  <div class="mb-2 flex items-end gap-2" data-pet-speech hidden>
+    <div
+      class="rounded-2xl max-w-48 border border-border bg-panel px-3 py-2 text-xs leading-relaxed text-text-soft shadow-sm"
+    >
+      <span data-pet-bubble-text></span>
+    </div>
+    <img
+      class="rounded-xl mb-1 size-20 shrink-0 border border-border bg-panel object-cover shadow-sm"
+      data-pet-meme
+      alt=""
+      width="80"
+      height="80"
+      hidden
+    />
   </div>
 
   <!--
@@ -83,11 +92,12 @@
   const root = document.querySelector<HTMLElement>("[data-pet]");
   const stage = root?.querySelector<HTMLElement>("[data-pet-stage]");
   const windowEl = root?.querySelector<HTMLElement>("[data-pet-window]");
-  const bubble = root?.querySelector<HTMLElement>("[data-pet-bubble]");
+  const speech = root?.querySelector<HTMLElement>("[data-pet-speech]");
   const bubbleText = root?.querySelector<HTMLElement>("[data-pet-bubble-text]");
+  const meme = root?.querySelector<HTMLImageElement>("[data-pet-meme]");
   const videos = Array.from(root?.querySelectorAll<HTMLVideoElement>("[data-pet-video]") ?? []);
 
-  if (root && stage && windowEl && bubble && bubbleText && videos.length === 2) {
+  if (root && stage && windowEl && speech && bubbleText && meme && videos.length === 2) {
     const STORE_POS = "pet:pos";
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
@@ -128,12 +138,28 @@
       localStorage.setItem(STORE_POS, JSON.stringify({ left: rect.left, top: rect.top }));
     };
 
-    const say = (text: string, hold = 3600) => {
+    // 表情包：27 张，说是说话时配图（dsh-pet 的碎碎念就这么干）。
+    // 不是每句都配，配了要等图片加载完再显示，避免先闪一个空框。
+    const MEMES = Array.from({ length: 27 }, (_, i) => `/pet/memes/meme-${String(i + 1).padStart(2, "0")}.png`);
+    let lastMeme = -1;
+
+    const showMeme = () => {
+      let index = Math.floor(Math.random() * MEMES.length);
+      if (index === lastMeme) index = (index + 1) % MEMES.length;
+      lastMeme = index;
+      const src = MEMES[index];
+      if (meme.getAttribute("src") !== src) meme.src = src;
+      meme.hidden = false;
+    };
+
+    const say = (text: string, hold = 3600, withMeme = true) => {
       bubbleText.textContent = text;
-      bubble.hidden = false;
+      speech.hidden = false;
+      if (withMeme && Math.random() < 0.75) showMeme();
+      else meme.hidden = true;
       window.clearTimeout(bubbleTimer);
       bubbleTimer = window.setTimeout(() => {
-        bubble.hidden = true;
+        speech.hidden = true;
       }, hold);
     };
 
@@ -248,11 +274,63 @@
       window.clearTimeout(idleTimer);
     };
 
+    // —— 悬停：抬一点 + 朝鼠标方向偏，离开复位 ——
+
+    let hovering = false;
+    let tiltRaf = 0;
+
+    const resetTilt = () => {
+      window.cancelAnimationFrame(tiltRaf);
+      windowEl.style.transition = "transform 180ms ease-out";
+      windowEl.style.transform = "scale(1, 1) rotate(0deg) translate(0, 0)";
+    };
+
+    stage.addEventListener("pointerenter", () => {
+      hovering = true;
+      windowEl.style.transition = "transform 160ms ease-out";
+      windowEl.style.transform = "scale(1.03) rotate(0deg) translate(0, -3px)";
+    });
+
+    stage.addEventListener("pointerleave", () => {
+      hovering = false;
+      resetTilt();
+    });
+
+    window.addEventListener(
+      "pointermove",
+      (event) => {
+        if (!hovering || dragging) return;
+        window.cancelAnimationFrame(tiltRaf);
+        tiltRaf = window.requestAnimationFrame(() => {
+          const rect = stage.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          // 归一化到 ±1，换算成 ±4 度倾斜和 ±6px 平移
+          const nx = Math.max(-1, Math.min(1, (event.clientX - cx) / (rect.width / 2 + 120)));
+          const ny = Math.max(-1, Math.min(1, (event.clientY - cy) / (rect.height / 2 + 120)));
+          windowEl.style.transform = `scale(1.03) rotate(${(nx * 4).toFixed(2)}deg) translate(${(nx * 6).toFixed(1)}px, ${(-3 + ny * 4).toFixed(1)}px)`;
+        });
+      },
+      { passive: true },
+    );
+
+    // 悬停时按 S 睡觉（dsh-pet 的键位），Esc 叫醒
+    window.addEventListener("keydown", (event) => {
+      if (!hovering) return;
+      if (event.key === "s" || event.key === "S") {
+        event.preventDefault();
+        if (!sleeping) sleep();
+      } else if (event.key === "Escape" && sleeping) {
+        wake();
+      }
+    });
+
     // —— 拖拽与物理 ——
 
     stage.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
       window.cancelAnimationFrame(raf);
+      resetTilt();
       vx = 0;
       vy = 0;
       dragging = true;
