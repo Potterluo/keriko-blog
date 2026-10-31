@@ -1,0 +1,62 @@
+<svg width="1000" height="440" viewBox="0 0 1000 440" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="440" fill="#F8FAFC"/>
+  <defs>
+    <marker id="g1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+  <text x="60" y="38" font-size="15" font-weight="700" fill="#0F172A">回传 T 步之后还剩多少</text>
+
+  <line x1="120" y1="80" x2="120" y2="360" stroke="#94A3B8" stroke-width="1.2" marker-end="url(#g1)"/>
+  <line x1="120" y1="360" x2="925" y2="360" stroke="#94A3B8" stroke-width="1.2" marker-end="url(#g1)"/>
+
+  <text x="70" y="76" font-size="10.5" fill="#64748B">剩余倍率</text>
+  <text x="846" y="398" font-size="10.5" fill="#64748B">回传步数</text>
+
+  <g font-size="10" fill="#94A3B8" text-anchor="end">
+    <text x="112" y="84">1</text>
+    <text x="112" y="145">10⁻¹⁰</text>
+    <text x="112" y="206">10⁻²⁰</text>
+    <text x="112" y="267">10⁻³⁰</text>
+    <text x="112" y="328">10⁻⁴⁰</text>
+  </g>
+  <g stroke="#E2E8F0" stroke-width="1">
+    <line x1="120" y1="80" x2="920" y2="80"/>
+    <line x1="120" y1="141" x2="920" y2="141"/>
+    <line x1="120" y1="202" x2="920" y2="202"/>
+    <line x1="120" y1="263" x2="920" y2="263"/>
+    <line x1="120" y1="324" x2="920" y2="324"/>
+  </g>
+  <g font-size="10" fill="#94A3B8" text-anchor="middle">
+    <text x="120" y="378">0</text>
+    <text x="280" y="378">200</text>
+    <text x="440" y="378">400</text>
+    <text x="600" y="378">600</text>
+    <text x="760" y="378">800</text>
+    <text x="920" y="378">1000</text>
+  </g>
+
+  <polyline fill="none" stroke="#0284C7" stroke-width="2.2"
+    points="120,80 200,107.8 280,135.7 360,163.6 440,191.4 520,219.2 600,247.1 680,274.9 760,302.8 840,330.7 920,358.5"/>
+
+  <polyline fill="none" stroke="#F59E0B" stroke-width="2.2"
+    points="120,80 128,98.3 136,116.6 152,153.3 168,189.9 184,226.6 200,263.2 240,356 280,360"/>
+
+  <polyline fill="none" stroke="#10B981" stroke-width="2.2"
+    points="120,80 200,82.7 280,85.3 360,88 440,90.6 520,93.3 600,95.9 680,98.6 760,101.2 840,103.9 920,106.6"/>
+
+  <polyline fill="none" stroke="#065F46" stroke-width="2.2" stroke-dasharray="6 4"
+    points="120,80 200,80.3 280,80.5 360,80.8 440,81.1 520,81.3 600,81.6 680,81.9 760,82.1 840,82.4 920,82.6"/>
+
+  <rect x="696" y="126" width="248" height="128" rx="8" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1"/>
+  <line x1="708" y1="146" x2="740" y2="146" stroke="#0284C7" stroke-width="2.2"/>
+  <text x="748" y="150" font-size="10.5" fill="#334155">h 通路，每步乘 0.9</text>
+  <line x1="708" y1="172" x2="740" y2="172" stroke="#F59E0B" stroke-width="2.2"/>
+  <text x="748" y="176" font-size="10.5" fill="#334155">c 通路，遗忘门 0.5</text>
+  <line x1="708" y1="198" x2="740" y2="198" stroke="#10B981" stroke-width="2.2"/>
+  <text x="748" y="202" font-size="10.5" fill="#334155">c 通路，遗忘门 0.99</text>
+  <line x1="708" y1="224" x2="740" y2="224" stroke="#065F46" stroke-width="2.2" stroke-dasharray="6 4"/>
+  <text x="748" y="228" font-size="10.5" fill="#334155">c 通路，遗忘门 0.999</text>
+
+  <text x="60" y="410" font-size="11" fill="#64748B">两条绿线都停在 0.37：0.99 走 100 步、0.999 走 1000 步，效果相同。遗忘门一旦掉到 0.9，绿线就并回蓝线。</text>
+</svg>

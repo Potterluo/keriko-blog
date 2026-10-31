@@ -1,0 +1,77 @@
+<svg width="1000" height="600" viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="600" fill="#F8FAFC"/>
+  <defs>
+    <marker id="s1" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+
+  <text x="60" y="40" font-size="15" font-weight="700" fill="#0F172A">同一个解码动作，两种读法</text>
+
+  <text x="60" y="80" font-size="12" font-weight="700" fill="#334155">Seq2Seq：所有信息压进一个向量</text>
+
+  <rect x="60" y="104" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="86" y="132" font-size="12" fill="#075985" text-anchor="middle">我</text>
+  <rect x="140" y="104" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="166" y="132" font-size="12" fill="#075985" text-anchor="middle">爱</text>
+  <rect x="220" y="104" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="246" y="132" font-size="12" fill="#075985" text-anchor="middle">学</text>
+  <rect x="300" y="104" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="326" y="132" font-size="12" fill="#075985" text-anchor="middle">习</text>
+  <line x1="114" y1="126" x2="136" y2="126" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <line x1="194" y1="126" x2="216" y2="126" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <line x1="274" y1="126" x2="296" y2="126" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+
+  <line x1="354" y1="126" x2="428" y2="126" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <rect x="430" y="104" width="150" height="44" rx="8" fill="#FEF2F2" stroke="#F43F5E" stroke-width="1.8"/>
+  <text x="505" y="132" font-size="11.5" font-weight="600" fill="#9F1239" text-anchor="middle">c（固定 8000 维）</text>
+
+  <line x1="582" y1="126" x2="636" y2="126" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <rect x="640" y="104" width="60" height="44" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="670" y="132" font-size="12" fill="#065F46" text-anchor="middle">I</text>
+  <line x1="702" y1="126" x2="716" y2="126" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <rect x="720" y="104" width="60" height="44" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="750" y="132" font-size="12" fill="#065F46" text-anchor="middle">love</text>
+  <line x1="782" y1="126" x2="796" y2="126" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <rect x="800" y="104" width="86" height="44" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="843" y="132" font-size="12" fill="#065F46" text-anchor="middle">learning</text>
+
+  <text x="640" y="176" font-size="10.5" fill="#64748B">第 1 步和第 10 步拿到的</text>
+  <text x="640" y="192" font-size="10.5" fill="#64748B">是同一个向量</text>
+
+  <line x1="60" y1="228" x2="940" y2="228" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="5 5"/>
+
+  <text x="60" y="264" font-size="12" font-weight="700" fill="#334155">Bahdanau 注意力：每一步重新读一遍源句</text>
+
+  <text x="86" y="408" font-size="10" fill="#475569" text-anchor="middle">0.09</text>
+  <rect x="66" y="414" width="40" height="8" rx="2" fill="#6366F1"/>
+  <text x="166" y="396" font-size="10" fill="#475569" text-anchor="middle">0.24</text>
+  <rect x="146" y="402" width="40" height="20" rx="2" fill="#6366F1"/>
+  <text x="246" y="372" font-size="10" fill="#475569" text-anchor="middle">0.58</text>
+  <rect x="226" y="378" width="40" height="44" rx="2" fill="#6366F1"/>
+  <text x="326" y="408" font-size="10" fill="#475569" text-anchor="middle">0.09</text>
+  <rect x="306" y="414" width="40" height="8" rx="2" fill="#6366F1"/>
+
+  <rect x="60" y="424" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="86" y="452" font-size="12" fill="#075985" text-anchor="middle">我</text>
+  <rect x="140" y="424" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="166" y="452" font-size="12" fill="#075985" text-anchor="middle">爱</text>
+  <rect x="220" y="424" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="246" y="452" font-size="12" fill="#075985" text-anchor="middle">学</text>
+  <rect x="300" y="424" width="52" height="44" rx="8" fill="#E0F2FE" stroke="#0284C7" stroke-width="1.2"/>
+  <text x="326" y="452" font-size="12" fill="#075985" text-anchor="middle">习</text>
+
+  <text x="60" y="492" font-size="10.5" fill="#64748B">本步权重</text>
+
+  <line x1="358" y1="446" x2="426" y2="446" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <rect x="430" y="424" width="150" height="44" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1.8"/>
+  <text x="505" y="452" font-size="11.5" font-weight="600" fill="#312E81" text-anchor="middle">cᵢ（第 i 步专属）</text>
+
+  <line x1="582" y1="446" x2="636" y2="446" stroke="#64748B" stroke-width="1.4" marker-end="url(#s1)"/>
+  <rect x="640" y="424" width="160" height="44" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="720" y="452" font-size="12" fill="#065F46" text-anchor="middle">解码第 i 步</text>
+
+  <text x="640" y="500" font-size="10.5" fill="#64748B">第 i+1 步的权重会重新算一遍，向量也换一个。</text>
+
+  <text x="60" y="548" font-size="11" fill="#64748B">柱子高度就是权重。分数只差 1 和 2，权重已经拉开到 0.09 与 0.58，这是 Softmax 的指数放大。</text>
+</svg>

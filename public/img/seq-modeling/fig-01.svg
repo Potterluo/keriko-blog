@@ -1,0 +1,66 @@
+<svg width="1000" height="470" viewBox="0 0 1000 470" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+  <rect x="0" y="0" width="1000" height="470" fill="#F8FAFC"/>
+  <text x="40" y="40" font-size="15" font-weight="700" fill="#0F172A">四条方案，三条轴，各付各的账</text>
+
+  <text x="295" y="82" font-size="11.5" font-weight="600" fill="#475569" text-anchor="middle">变长输入</text>
+  <text x="485" y="82" font-size="11.5" font-weight="600" fill="#475569" text-anchor="middle">信息路径</text>
+  <text x="675" y="82" font-size="11.5" font-weight="600" fill="#475569" text-anchor="middle">顺序步数</text>
+  <text x="865" y="82" font-size="11.5" font-weight="600" fill="#475569" text-anchor="middle">主要代价</text>
+
+  <rect x="40" y="96" width="150" height="70" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+  <text x="115" y="124" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">MLP</text>
+  <text x="115" y="144" font-size="10.5" fill="#64748B" text-anchor="middle">定长窗口</text>
+
+  <rect x="200" y="96" width="180" height="70" rx="8" fill="#FEF2F2" stroke="#F43F5E" stroke-width="1.2"/>
+  <text x="290" y="136" font-size="11.5" fill="#9F1239" text-anchor="middle">不支持</text>
+  <rect x="390" y="96" width="180" height="70" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="480" y="136" font-size="11.5" fill="#92400E" text-anchor="middle">窗口内 O(1)</text>
+  <rect x="580" y="96" width="180" height="70" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="670" y="136" font-size="11.5" fill="#065F46" text-anchor="middle">O(1)</text>
+  <rect x="770" y="96" width="180" height="70" rx="8" fill="#FEF2F2" stroke="#F43F5E" stroke-width="1.2"/>
+  <text x="860" y="136" font-size="11.5" fill="#9F1239" text-anchor="middle">参数随窗口爆炸</text>
+
+  <rect x="40" y="176" width="150" height="70" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+  <text x="115" y="204" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">RNN</text>
+  <text x="115" y="224" font-size="10.5" fill="#64748B" text-anchor="middle">循环 + 共享参数</text>
+
+  <rect x="200" y="176" width="180" height="70" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="290" y="216" font-size="11.5" fill="#065F46" text-anchor="middle">支持</text>
+  <rect x="390" y="176" width="180" height="70" rx="8" fill="#FEF2F2" stroke="#F43F5E" stroke-width="1.2"/>
+  <text x="480" y="216" font-size="11.5" fill="#9F1239" text-anchor="middle">O(n)</text>
+  <rect x="580" y="176" width="180" height="70" rx="8" fill="#FEF2F2" stroke="#F43F5E" stroke-width="1.2"/>
+  <text x="670" y="216" font-size="11.5" fill="#9F1239" text-anchor="middle">O(n)</text>
+  <rect x="770" y="176" width="180" height="70" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="860" y="216" font-size="11.5" fill="#92400E" text-anchor="middle">梯度连乘衰减</text>
+
+  <rect x="40" y="256" width="150" height="70" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+  <text x="115" y="284" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">一维卷积</text>
+  <text x="115" y="304" font-size="10.5" fill="#64748B" text-anchor="middle">固定核宽</text>
+
+  <rect x="200" y="256" width="180" height="70" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="290" y="296" font-size="11.5" fill="#065F46" text-anchor="middle">支持</text>
+  <rect x="390" y="256" width="180" height="70" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="480" y="288" font-size="11" fill="#92400E" text-anchor="middle">连续核 O(n/k)</text>
+  <text x="480" y="306" font-size="11" fill="#92400E" text-anchor="middle">空洞卷积 O(logₖn)</text>
+  <rect x="580" y="256" width="180" height="70" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="670" y="296" font-size="11.5" fill="#065F46" text-anchor="middle">O(1)</text>
+  <rect x="770" y="256" width="180" height="70" rx="8" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="860" y="288" font-size="11" fill="#92400E" text-anchor="middle">感受野有限</text>
+  <text x="860" y="306" font-size="11" fill="#92400E" text-anchor="middle">不含位置信息</text>
+
+  <rect x="40" y="336" width="150" height="70" rx="10" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.2"/>
+  <text x="115" y="364" font-size="12" font-weight="700" fill="#334155" text-anchor="middle">自注意力</text>
+  <text x="115" y="384" font-size="10.5" fill="#64748B" text-anchor="middle">每个位置读所有位置</text>
+
+  <rect x="200" y="336" width="180" height="70" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="290" y="376" font-size="11.5" fill="#065F46" text-anchor="middle">支持</text>
+  <rect x="390" y="336" width="180" height="70" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="480" y="376" font-size="11.5" fill="#065F46" text-anchor="middle">O(1)</text>
+  <rect x="580" y="336" width="180" height="70" rx="8" fill="#ECFDF5" stroke="#10B981" stroke-width="1.2"/>
+  <text x="670" y="376" font-size="11.5" fill="#065F46" text-anchor="middle">O(1)</text>
+  <rect x="770" y="336" width="180" height="70" rx="8" fill="#FEF2F2" stroke="#F43F5E" stroke-width="1.2"/>
+  <text x="860" y="368" font-size="11" fill="#9F1239" text-anchor="middle">打分 O(n²)</text>
+  <text x="860" y="386" font-size="11" fill="#9F1239" text-anchor="middle">KV 随长度线性涨</text>
+
+  <text x="40" y="440" font-size="11" fill="#64748B">每一代都只在其中两条轴上赢，第三条上付账。没有一次是全面胜利，所以这条路才走了六轮。</text>
+</svg>
