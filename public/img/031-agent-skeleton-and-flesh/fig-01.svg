@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 540" width="1000" height="540" role="img" aria-label="骨架与血肉的对应关系">
+  <defs>
+    <marker id="f1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="540" fill="#F8FAFC"/>
+
+  <text x="40" y="40" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif" font-size="15" font-weight="600" fill="#0F172A">骨架定位置，血肉填实现</text>
+  <text x="40" y="64" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" fill="#64748B">左边四件决定能不能长大，右边六件决定能不能跑</text>
+
+  <!-- 左：骨架 -->
+  <rect x="40" y="88" width="400" height="404" rx="10" fill="#FFFFFF" stroke="#6366F1" stroke-width="1.5"/>
+  <text x="60" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#4338CA">骨架 · 四件</text>
+
+  <rect x="60" y="128" width="360" height="76" rx="8" fill="#EEF2FF" stroke="#C7D2FE"/>
+  <text x="78" y="150" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#4338CA">① 分层</text>
+  <text x="78" y="170" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">领域定语言、应用编排、适配翻译</text>
+  <text x="78" y="190" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">解决：边界不清，改一处动全身</text>
+
+  <rect x="60" y="216" width="360" height="76" rx="8" fill="#EEF2FF" stroke="#C7D2FE"/>
+  <text x="78" y="238" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#4338CA">② 领域模型</text>
+  <text x="78" y="258" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">Session、Tool、Context 三个对象</text>
+  <text x="78" y="278" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">解决：系统到底在说什么</text>
+
+  <rect x="60" y="304" width="360" height="76" rx="8" fill="#EEF2FF" stroke="#C7D2FE"/>
+  <text x="78" y="326" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#4338CA">③ 接口倒置</text>
+  <text x="78" y="346" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">SessionStore、ModelClient 接口在上</text>
+  <text x="78" y="366" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">解决：测试要真调模型、换存储要改逻辑</text>
+
+  <rect x="60" y="392" width="360" height="76" rx="8" fill="#EEF2FF" stroke="#C7D2FE"/>
+  <text x="78" y="414" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="12" font-weight="600" fill="#4338CA">④ 装配根</text>
+  <text x="78" y="434" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#475569">唯一知道所有具体类的地方</text>
+  <text x="78" y="454" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#94A3B8">解决：换模型要改好几个文件</text>
+
+  <!-- 中：箭头 -->
+  <line x1="452" y1="250" x2="512" y2="250" stroke="#64748B" stroke-width="1.6" marker-end="url(#f1)"/>
+  <line x1="512" y1="272" x2="452" y2="272" stroke="#64748B" stroke-width="1.6" marker-end="url(#f1)"/>
+  <text x="446" y="228" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#64748B">对位</text>
+
+  <!-- 右：血肉 -->
+  <rect x="530" y="88" width="430" height="404" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="1.5"/>
+  <text x="550" y="114" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="13" font-weight="600" fill="#047857">血肉 · 六件</text>
+
+  <rect x="550" y="128" width="390" height="52" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="566" y="148" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#047857">① 仓库现场</text>
+  <text x="566" y="166" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">仓库根、分支、改动、项目文档 · 落在适配层</text>
+
+  <rect x="550" y="188" width="390" height="52" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="566" y="208" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#047857">② 提示词形状</text>
+  <text x="566" y="226" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">不变的在前、多变的在后 · 落在应用层的组装顺序</text>
+
+  <rect x="550" y="248" width="390" height="52" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="566" y="268" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#047857">③ 工具闸门</text>
+  <text x="566" y="286" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">五道检查 + 路径不能出仓库 · 领域 Tool 加执行层</text>
+
+  <rect x="550" y="308" width="390" height="52" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="566" y="328" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#047857">④ 上下文削减</text>
+  <text x="566" y="346" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">单块封顶、老的压缩、近的保真 · 应用层策略</text>
+
+  <rect x="550" y="368" width="390" height="52" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="566" y="388" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#047857">⑤ 转录与记忆</text>
+  <text x="566" y="406" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">完整转录 + 工作记忆两层 · 领域 Session + 适配存储</text>
+
+  <rect x="550" y="428" width="390" height="52" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+  <text x="566" y="448" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#047857">⑥ 有界委派</text>
+  <text x="566" y="466" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10" fill="#475569">只读、三步、深度封顶 · 应用层编排</text>
+
+  <text x="40" y="514" font-family="'PingFang SC','Microsoft YaHei',system-ui,sans-serif" font-size="10.5" fill="#64748B">两者缺一：只有骨架能编译不好用，只有血肉能跑 demo 换一次模型要动全身。</text>
+</svg>
