@@ -10,6 +10,7 @@ tags:
   - 注意力机制
   - 大模型原理
 draft: false
+featured: true
 ---
 
 先说一个和文本无关的例子。

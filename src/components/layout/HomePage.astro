@@ -6,16 +6,21 @@ import Icon from "@/components/ui/Icon.astro";
 import PopularTags from "@/components/ui/PopularTags.astro";
 import PostSort from "@/components/ui/PostSort.astro";
 import QuoteCard from "@/components/ui/QuoteCard.astro";
+import RecentUpdates from "@/components/ui/RecentUpdates.astro";
 import SiteStats from "@/components/ui/SiteStats.astro";
 import { siteConfig } from "@/config/siteConfig";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getTranslator, I18nKey } from "@/i18n";
 import type { SiteStat } from "@/types/home";
 import { resolveSiteAsset } from "@/utils/assets";
-import { getVisiblePosts } from "@/utils/posts";
+import { getFeaturedPosts, getRecentlyUpdatedPosts, getVisiblePosts } from "@/utils/posts";
 
 const t = getTranslator();
 const posts = await getVisiblePosts();
+const featured = await getFeaturedPosts();
+// 首页默认只放精选；一篇都没标时按最新兜底，避免首页空着。
+const homePosts = featured.length > 0 ? featured : posts;
+const recentlyUpdated = getRecentlyUpdatedPosts(posts, 5);
 const categoryCount = new Set(posts.map((post) => post.data.category)).size;
 const tagCounts = new Map<string, number>();
 
@@ -60,11 +65,16 @@ const heroImageDark = resolveSiteAsset(siteConfig.heroImageDark);
           <section aria-labelledby="recent-title">
             <div class="mb-4 flex items-center justify-between gap-4">
               <h2 class="m-0 text-lg font-bold" id="recent-title">
-                {t(I18nKey.postsList)}
+                {featured.length > 0 ? t(I18nKey.featuredPosts) : t(I18nKey.postsList)}
               </h2>
               <PostSort targetId="home-post-list" />
             </div>
-            <PostList id="home-post-list" posts={posts} limit={5} ariaLabel={t(I18nKey.postsList)} />
+            <PostList
+              id="home-post-list"
+              posts={homePosts}
+              limit={homePosts.length}
+              ariaLabel={featured.length > 0 ? t(I18nKey.featuredPosts) : t(I18nKey.postsList)}
+            />
             <a class="mt-5 ml-auto flex w-fit items-center gap-2 text-sm font-bold text-accent-strong" href={postsHref}>
               {t(I18nKey.viewAllPosts)}
               <Icon class="size-5" name="arrow" size={20} />
@@ -83,6 +93,7 @@ const heroImageDark = resolveSiteAsset(siteConfig.heroImageDark);
       aria-label={t(I18nKey.siteInformation)}
     >
       <SiteStats stats={stats} title={t(I18nKey.siteOverview)} />
+      {recentlyUpdated.length > 0 && <RecentUpdates posts={recentlyUpdated} title={t(I18nKey.recentUpdates)} />}
       {
         popularTags.length > 0 && (
           <PopularTags tags={popularTags} title={t(I18nKey.popularTags)} tagsLabel={t(I18nKey.navigationTags)} />

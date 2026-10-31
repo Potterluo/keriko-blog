@@ -1,0 +1,38 @@
+[
+  {
+    "file": "page.png",
+    "state": null,
+    "size": "1440x900",
+    "zoom": 1,
+    "animationWaitMs": 0,
+    "issues": [],
+    "lint": [
+      {
+        "rule": "longMeasure",
+        "label": "正文行太长",
+        "count": 5,
+        "examples": [
+          "p.mt-3.mb-0「先讲清楚一个 agent 是怎么跑起来的，再给一」（每行约 63 字）",
+          "p.mt-3.mb-0「飞天闪客那期五十八分钟的视频，主线是一套「先定义」（每行约 63 字）",
+          "p.mt-3.mb-0「一个定长输入的多层感知机，怎么一步步变成 Tra」（每行约 63 字）"
+        ]
+      },
+      {
+        "rule": "contrastLow",
+        "label": "文字对比度不达标（正文低于 4.5:1，大字低于 3:1）",
+        "count": 26,
+        "examples": [
+          "span.inline-flex.min-h-6「Agent」（4.40:1）",
+          "span.inline-flex.min-h-6「Harness」（4.40:1）",
+          "span.inline-flex.min-h-6「架构设计」（4.40:1）"
+        ]
+      },
+      {
+        "rule": "tightLeading",
+        "label": "多行正文行高过紧",
+        "count": 1,
+        "examples": ["span.line-clamp-2.text-sm「把定义搞清楚：从 Transformer 到大模」（1.38）"]
+      }
+    ]
+  }
+]

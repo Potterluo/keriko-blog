@@ -9,6 +9,7 @@ tags:
   - KV Cache
   - 架构对比
 draft: false
+featured: true
 ---
 
 同一个问题（GPU 显存装不下的 KV Cache 该卸到哪、又该怎么取回来），两个系统给了两种几乎相反的回答。

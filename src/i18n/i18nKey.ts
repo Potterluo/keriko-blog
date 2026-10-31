@@ -22,6 +22,8 @@ export const I18nKey = {
   viewAllPosts: "home.viewAllPosts",
   siteOverview: "home.siteOverview",
   popularTags: "home.popularTags",
+  featuredPosts: "home.featuredPosts",
+  recentUpdates: "home.recentUpdates",
   statsPosts: "stats.posts",
   statsCategories: "stats.categories",
   statsTags: "stats.tags",

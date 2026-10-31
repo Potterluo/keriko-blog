@@ -25,6 +25,8 @@ export const zhCN = {
   [I18nKey.viewAllPosts]: "查看全部文章",
   [I18nKey.siteOverview]: "站点概览",
   [I18nKey.popularTags]: "热门标签",
+  [I18nKey.featuredPosts]: "精选文章",
+  [I18nKey.recentUpdates]: "最近更新",
   [I18nKey.statsPosts]: "文章",
   [I18nKey.statsCategories]: "分类",
   [I18nKey.statsTags]: "标签",

@@ -25,6 +25,8 @@ export const enUS = {
   [I18nKey.viewAllPosts]: "View all posts",
   [I18nKey.siteOverview]: "Site overview",
   [I18nKey.popularTags]: "Popular tags",
+  [I18nKey.featuredPosts]: "Featured",
+  [I18nKey.recentUpdates]: "Recently updated",
   [I18nKey.statsPosts]: "Posts",
   [I18nKey.statsCategories]: "Categories",
   [I18nKey.statsTags]: "Tags",

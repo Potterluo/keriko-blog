@@ -10,6 +10,7 @@ tags:
   - Agent
   - 大模型原理
 draft: false
+featured: true
 ---
 
 飞天闪客这期视频有 58 分钟，标题叫「一小时从 Transformer 到大模型」。我把音频转成文字，从头读到尾，发现他真正想讲的不是 Transformer。

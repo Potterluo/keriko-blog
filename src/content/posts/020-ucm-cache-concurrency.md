@@ -9,6 +9,7 @@ tags:
   - 无锁
   - KV Cache
 draft: false
+featured: true
 ---
 
 缓存层最频繁的两个动作是"这个块在不在"和"命中，把槽位钉住"。在 UCM 的 CacheStore 里，它们都落在一张跨进程共享的哈希表上：块哈希映射到内存槽位，`BufferManager::Lookup` 对一批块逐块调 `Exist`，`LoadQueue` 在决定要不要搬数据之前先 `Get` 一次。这是典型的读多写少：查询是常态，插入、淘汰、槽位重配置只是偶发。

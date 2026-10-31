@@ -24,14 +24,14 @@ export const expressiveCodeConfig: ExpressiveCodeConfig = {
     // 是否启用
     enable: true,
 
-    // 代码块的最大行数，超过会自动折叠
-    lineThreshold: 15,
+    // 超过这个行数才允许折叠（配合行内 collapse 标记使用）
+    lineThreshold: 40,
 
-    // 被自动折叠后，可见的预览行数
-    previewLines: 8,
+    // 折叠后可见的预览行数
+    previewLines: 12,
 
-    // 默认折叠长代码块
-    defaultCollapsed: true,
+    // 默认不折叠：只有显式写了 collapse 的代码块才折起来
+    defaultCollapsed: false,
   },
 
   pluginLanguageLogo: {

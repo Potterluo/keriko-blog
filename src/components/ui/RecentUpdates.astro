@@ -1,0 +1,36 @@
+---
+import Card from "@/components/ui/Card.astro";
+import { formatPostDate, getPostHref, type PostEntry } from "@/utils/posts";
+
+interface Props {
+  posts: readonly PostEntry[];
+  title: string;
+}
+
+const { posts, title } = Astro.props;
+---
+
+<Card as="section" class="px-6 py-5 tablet:p-8" aria-labelledby="recent-updates-title">
+  <h2 class="m-0 text-sm font-bold tablet:text-base" id="recent-updates-title">{title}</h2>
+  <ol class="m-0 mt-4 list-none divide-y divide-border p-0">
+    {
+      posts.map((post) => {
+        const date = post.data.updatedAt ?? post.data.publishedAt;
+        return (
+          <li class="py-2.5 first:pt-0 last:pb-0">
+            <a class="group flex flex-col gap-1 no-underline" href={getPostHref(post)}>
+              <span class="line-clamp-2 text-sm leading-snug text-text-soft transition-colors group-hover:text-accent-strong">
+                {post.data.title}
+              </span>
+              <span class="flex items-center gap-2 text-xs text-muted">
+                <time datetime={date.toISOString()}>{formatPostDate(date)}</time>
+                <span aria-hidden="true">·</span>
+                <span>{post.data.category}</span>
+              </span>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ol>
+</Card>

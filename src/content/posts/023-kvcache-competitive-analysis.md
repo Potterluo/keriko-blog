@@ -9,6 +9,7 @@ tags:
   - 竞争力分析
   - 架构对比
 draft: false
+featured: true
 ---
 
 成稿于 2026-09-02，是当时基于公开材料做的一轮横向评估：文中所有评分、排名、差距清单与执行计划都是那个时点的判断，此后各家方案都还在演进，读的时候请带上时间戳。对比对象是八家：UCM、Mooncake、SGLang HiCache、LMCache、MemCache、NVIDIA Dynamo、TairKV、FlexKV，落点是技术选型而不是论文综述。文中的「UCM」指华为 ModelEngine 的 Unified Cache Manager（推理记忆数据管理器），也就是被反复拆解的那一方。文中图片点击可看原尺寸。
