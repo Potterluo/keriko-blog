@@ -1,5 +1,5 @@
 ---
-// 看板娘：自己托管的透明视频动画，交互约定参考 live2d-widget（角落、拖动、点击回应、关了能叫回来）。
+// 看板娘：自托管的透明视频动画。素材来自 dsh-pet（109 段），交互约定参考 live2d-widget。
 // 素材与署名见 public/pet/README.md，形象许可 CC BY-NC-SA 4.0。
 ---
 
@@ -18,23 +18,25 @@
   </div>
 
   <!--
-    源片是 640×360 的透明视频，角色只占中间一块（实测十二段动画的并集包围盒：
-    x=189..467、y=38..342）。窗口按这个包围盒裁切，把视频放大平移让角色填满
-    140×152 的框。改尺寸要按 S=140/278 重算这三个百分数，别凭感觉调。
+    源片是 640×360 的透明视频，角色只占中间一块（实测并集包围盒 x=189..467、y=38..342）。
+    窗口按这个包围盒裁切，球视频放大平移让角色填满 200×217 的框。
+    改尺寸时按 S=200/278 重算这三个百分数，别凭感觉调。
   -->
-  <div class="pointer-events-auto relative w-[140px]" data-pet-stage>
-    <div class="relative h-[152px] w-full overflow-hidden" data-pet-window>
+  <div class="group/pet pointer-events-auto relative w-[200px] origin-bottom" data-pet-stage>
+    <div class="relative h-[217px] w-full overflow-hidden" data-pet-window>
       <video
-        class="absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none cursor-grab active:cursor-grabbing"
+        class="pointer-events-none absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none"
         data-pet-video
         muted
         playsinline
         preload="none"
+        disablepictureinpicture
+        disableRemotePlayback
         aria-hidden="true"></video>
     </div>
 
     <button
-      class="absolute -top-1 -right-1 grid size-6 cursor-pointer place-items-center rounded-full border border-border bg-panel text-xs text-muted transition-colors hover:text-accent-strong"
+      class="absolute -top-1 -right-1 grid size-6 cursor-pointer place-items-center rounded-full border border-border bg-panel text-xs text-muted opacity-0 transition-[opacity,color] duration-150 group-hover/pet:opacity-100 hover:text-accent-strong focus-visible:opacity-100"
       type="button"
       data-pet-close
       aria-label="收起看板娘">×</button
@@ -57,26 +59,21 @@
   aria-label="叫回看板娘">看板娘</button
 >
 
+<style>
+  /* 浏览器自带的画中画按钮浮在视频上，看着像坏了，一律藏掉 */
+  [data-pet-video]::-webkit-media-controls,
+  [data-pet-video]::-webkit-media-controls-enclosure,
+  [data-pet-video]::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+  }
+</style>
+
 <script>
-  type Clip = { file: string; loop?: boolean; next?: string };
+  type Entry = { file: string; label: string; kind: string; size: number };
 
-  const CLIPS: Record<string, Clip> = {
-    idle: { file: "idle.webm", loop: true },
-    "tap-joy": { file: "tap-joy.webm", next: "idle" },
-    "tap-shy": { file: "tap-shy.webm", next: "idle" },
-    "tap-pout": { file: "tap-pout.webm", next: "idle" },
-    "tap-wave": { file: "tap-wave.webm", next: "idle" },
-    "sleep-in": { file: "sleep-in.webm", next: "sleep-loop" },
-    "sleep-loop": { file: "sleep-loop.webm", loop: true },
-    "sleep-out": { file: "sleep-out.webm", next: "idle" },
-    hum: { file: "hum.webm", next: "idle" },
-    yawn: { file: "yawn.webm", next: "idle" },
-    mirror: { file: "mirror.webm", next: "idle" },
-    code: { file: "code.webm", next: "idle" },
-  };
-
-  const TAPS = ["tap-joy", "tap-shy", "tap-pout", "tap-wave"];
-  const IDLE_ACTIONS = ["hum", "yawn", "mirror", "code"];
+  const MANIFEST = "/pet/manifest.json";
+  const BASE = "/pet/";
+  const IDLE = "idle.webm";
   const QUOTES = [
     "欢迎来玩，随便逛逛。",
     "这里的每一篇都是慢慢写的。",
@@ -84,7 +81,7 @@
     "按 Ctrl+K 可以搜文章。",
     "看累了就歇会儿。",
     "双击我可以睡觉。",
-    "拖着我到处走也行。",
+    "拖着我甩出去，我会弹回来。",
     "文章里有问题，欢迎到 GitHub 提。",
   ];
 
@@ -92,43 +89,46 @@
   const restore = document.querySelector<HTMLButtonElement>("[data-pet-restore]");
   const video = root?.querySelector<HTMLVideoElement>("[data-pet-video]");
   const stage = root?.querySelector<HTMLElement>("[data-pet-stage]");
+  const windowEl = root?.querySelector<HTMLElement>("[data-pet-window]");
   const closeButton = root?.querySelector<HTMLButtonElement>("[data-pet-close]");
   const bubble = root?.querySelector<HTMLElement>("[data-pet-bubble]");
   const bubbleText = root?.querySelector<HTMLElement>("[data-pet-bubble-text]");
 
-  if (root && restore && video && stage && closeButton && bubble && bubbleText) {
+  if (root && restore && video && stage && windowEl && closeButton && bubble && bubbleText) {
     const STORE_HIDDEN = "pet:hidden";
     const STORE_POS = "pet:pos";
-    const base = "/pet/";
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
 
-    let current = "idle";
+    let entries: Entry[] = [];
     let sleeping = false;
-    let dragging = false;
-    let moved = false;
-    let startX = 0;
-    let startY = 0;
-    let originLeft = 0;
-    let originTop = 0;
+    let hidden = false;
     let idleTimer: number | undefined;
     let bubbleTimer: number | undefined;
+    let raf = 0;
+    let recent: string[] = [];
 
-    // Safari 不认 webm 的 alpha 通道，透明会渲染成黑底，干脆不显示。
+    // —— 位置与物理 ——
+    let x = 16;
+    let y = 0;
+    let vx = 0;
+    let vy = 0;
+    let dragging = false;
+    let moved = false;
+    let sample: { t: number; x: number; y: number }[] = [];
+
     const supportsAlpha = !isSafari && video.canPlayType('video/webm; codecs="vp9"') !== "";
 
-    const play = (name: string) => {
-      const clip = CLIPS[name];
-      if (!clip) return;
-      current = name;
-      if (video.dataset.clip !== name) {
-        video.dataset.clip = name;
-        video.src = base + clip.file;
+    const playFile = (file: string, loop = false) => {
+      if (video.dataset.clip !== file) {
+        video.dataset.clip = file;
+        video.src = BASE + file;
       }
-      if (clip.loop) video.loop = true;
-      else video.loop = false;
+      video.loop = loop;
       void video.play().catch(() => {});
     };
+
+    const idle = () => playFile(IDLE, true);
 
     const say = (text: string, hold = 3600) => {
       bubbleText.textContent = text;
@@ -139,103 +139,202 @@
       }, hold);
     };
 
+    // 挤压：落地或点击时压一下再弹回来
+    const squash = (sx: number, sy: number) => {
+      windowEl.style.transition = "transform 90ms cubic-bezier(0.3, 0.8, 0.4, 1)";
+      windowEl.style.transform = `scale(${sx}, ${sy})`;
+      window.setTimeout(() => {
+        windowEl.style.transform = "scale(1, 1)";
+      }, 90);
+    };
+
+    const apply = () => {
+      root.style.left = `${x}px`;
+      root.style.top = `${y}px`;
+      root.style.bottom = "auto";
+    };
+
+    const persist = () => {
+      const rect = root.getBoundingClientRect();
+      localStorage.setItem(STORE_POS, JSON.stringify({ left: rect.left, top: rect.top }));
+    };
+
+    // 甩出去：重力 + 撞墙反弹 + 摩擦，落地压一下
+    const fling = () => {
+      window.cancelAnimationFrame(raf);
+      let last = 0;
+      const gravity = 0.0026;
+      const bounce = 0.58;
+      const friction = 0.994;
+
+      const step = (ts: number) => {
+        const dt = last ? Math.min(34, ts - last) : 16;
+        last = ts;
+        x += vx * dt;
+        y += vy * dt;
+        vy += gravity * dt;
+
+        const maxX = window.innerWidth - root.offsetWidth - 8;
+        const maxY = window.innerHeight - root.offsetHeight - 8;
+
+        if (x < 8) {
+          x = 8;
+          vx = -vx * bounce;
+          squash(1.1, 0.9);
+        } else if (x > maxX) {
+          x = maxX;
+          vx = -vx * bounce;
+          squash(1.1, 0.9);
+        }
+        if (y < 8) {
+          y = 8;
+          vy = -vy * bounce;
+        } else if (y > maxY) {
+          y = maxY;
+          vy = -vy * bounce * 0.85;
+          vx *= 0.92;
+          if (Math.abs(vy) > 0.25) squash(1.14, 0.86);
+        }
+
+        vx *= friction;
+        vy *= friction;
+        apply();
+
+        const resting = Math.abs(vx) < 0.02 && Math.abs(vy) < 0.02 && y >= maxY - 1.5;
+        if (resting) {
+          vx = 0;
+          vy = 0;
+          persist();
+          return;
+        }
+        raf = window.requestAnimationFrame(step);
+      };
+      raf = window.requestAnimationFrame(step);
+    };
+
+    // —— 随机动作 ——
+
+    const pool = () => entries.filter((e) => !["sleep", "tap", "drag"].includes(e.kind) && e.file !== IDLE);
+
+    const pick = (candidates: Entry[], count = 1) => {
+      const picked: Entry[] = [];
+      for (let i = 0; i < count && candidates.length; i++) {
+        const fresh = candidates.filter((e) => !recent.includes(e.file));
+        const from = fresh.length ? fresh : candidates;
+        const chosen = from[Math.floor(Math.random() * from.length)];
+        picked.push(chosen);
+        recent = [...recent, chosen.file].slice(-12);
+      }
+      return picked;
+    };
+
+    const prefetch = (file: string) => {
+      // 预热 HTTP 缓存，轮到它播时能立刻起帧
+      void fetch(BASE + file, { cache: "force-cache" }).catch(() => {});
+    };
+
+    const playOnce = (file: string) => {
+      playFile(file, false);
+      if (Math.random() < 0.25) say(QUOTES[Math.floor(Math.random() * QUOTES.length)], 2600);
+    };
+
     const scheduleIdleAction = () => {
       window.clearTimeout(idleTimer);
-      if (reduceMotion.matches || sleeping) return;
-      const wait = 22000 + Math.random() * 20000;
+      if (reduceMotion.matches || sleeping || hidden) return;
+      const wait = 6000 + Math.random() * 9000;
       idleTimer = window.setTimeout(() => {
-        if (document.visibilityState === "visible" && !sleeping) {
-          play(IDLE_ACTIONS[Math.floor(Math.random() * IDLE_ACTIONS.length)]);
+        if (document.visibilityState === "visible" && !sleeping && !hidden && entries.length) {
+          const [next] = pick(pool());
+          if (next) playOnce(next.file);
+          const [after] = pick(pool(), 2);
+          if (after) prefetch(after.file);
         }
         scheduleIdleAction();
       }, wait);
     };
 
-    const persistPosition = () => {
-      const rect = root.getBoundingClientRect();
-      localStorage.setItem(STORE_POS, JSON.stringify({ left: rect.left, top: rect.top }));
-    };
-
-    const applyPosition = () => {
-      const raw = localStorage.getItem(STORE_POS);
-      if (!raw) return;
-      try {
-        const { left, top } = JSON.parse(raw) as { left: number; top: number };
-        const maxLeft = window.innerWidth - root.offsetWidth - 8;
-        const maxTop = window.innerHeight - root.offsetHeight - 8;
-        root.style.left = `${Math.min(Math.max(8, left), Math.max(8, maxLeft))}px`;
-        root.style.top = `${Math.min(Math.max(8, top), Math.max(8, maxTop))}px`;
-        root.style.bottom = "auto";
-      } catch {
-        localStorage.removeItem(STORE_POS);
-      }
-    };
-
-    const hide = () => {
-      root.hidden = true;
-      restore.hidden = false;
-      localStorage.setItem(STORE_HIDDEN, "1");
-    };
-
-    const show = () => {
-      root.hidden = false;
-      restore.hidden = true;
-      localStorage.removeItem(STORE_HIDDEN);
-      play("idle");
-      scheduleIdleAction();
-    };
-
     const wake = () => {
       sleeping = false;
-      play("sleep-out");
+      const out = entries.find((e) => e.file === "sleep-out.webm");
+      playFile(out ? out.file : IDLE, !out);
       scheduleIdleAction();
     };
 
     const sleep = () => {
       sleeping = true;
-      play("sleep-in");
+      const inClip = entries.find((e) => e.file === "sleep-in.webm");
+      playFile(inClip ? inClip.file : IDLE, !inClip);
       say("那我睡一会儿…", 2600);
       window.clearTimeout(idleTimer);
     };
 
-    // 拖拽：位移小于 6px 当作点击，避免拖完又触发回应动画。
+    // —— 交互 ——
+
     stage.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
+      window.cancelAnimationFrame(raf);
+      vx = 0;
+      vy = 0;
       dragging = true;
       moved = false;
-      startX = event.clientX;
-      startY = event.clientY;
       const rect = root.getBoundingClientRect();
-      originLeft = rect.left;
-      originTop = rect.top;
+      x = rect.left;
+      y = rect.top;
+      sample = [{ t: performance.now(), x: event.clientX, y: event.clientY }];
       stage.setPointerCapture(event.pointerId);
     });
 
     stage.addEventListener("pointermove", (event) => {
       if (!dragging) return;
-      const dx = event.clientX - startX;
-      const dy = event.clientY - startY;
-      if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
-      if (!moved) return;
-      root.style.left = `${Math.max(8, Math.min(originLeft + dx, window.innerWidth - root.offsetWidth - 8))}px`;
-      root.style.top = `${Math.max(8, Math.min(originTop + dy, window.innerHeight - root.offsetHeight - 8))}px`;
-      root.style.bottom = "auto";
+      // 按「上一次的位置」算增量，用起点算会越拖越快
+      const last = sample[sample.length - 1];
+      const dx = event.clientX - last.x;
+      const dy = event.clientY - last.y;
+      if (Math.abs(event.clientX - sample[0].x) + Math.abs(event.clientY - sample[0].y) > 6) moved = true;
+      x = clampXBase(x + dx);
+      y = clampYBase(y + dy);
+      apply();
+      sample.push({ t: performance.now(), x: event.clientX, y: event.clientY });
+      if (sample.length > 6) sample.shift();
     });
+
+    const petRoot = root;
+    function clampXBase(value: number) {
+      return Math.max(8, Math.min(value, window.innerWidth - petRoot.offsetWidth - 8));
+    }
+    function clampYBase(value: number) {
+      return Math.max(8, Math.min(value, window.innerHeight - petRoot.offsetHeight - 8));
+    }
 
     stage.addEventListener("pointerup", (event) => {
       if (!dragging) return;
       dragging = false;
       stage.releasePointerCapture(event.pointerId);
+
       if (moved) {
-        persistPosition();
+        const first = sample[0];
+        const last = sample[sample.length - 1];
+        const dt = Math.max(16, last.t - first.t);
+        // 甩出去的速度（px/ms），上限防止一甩飞天
+        vx = Math.max(-3, Math.min(3, (last.x - first.x) / dt));
+        vy = Math.max(-3, Math.min(3, (last.y - first.y) / dt));
+        if (Math.abs(vx) > 0.08 || Math.abs(vy) > 0.08) {
+          fling();
+        } else {
+          persist();
+        }
         return;
       }
-      // 点击：睡着时叫醒，否则随机回应并说一句。
+
       if (sleeping) {
         wake();
         return;
       }
-      play(TAPS[Math.floor(Math.random() * TAPS.length)]);
+      // 点一下：Q 弹一下，随机播一段回应
+      squash(1.12, 0.88);
+      const taps = entries.filter((e) => e.kind === "tap");
+      const picked = taps.length ? pick(taps) : [];
+      if (picked.length) playFile(picked[0].file, false);
       say(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
     });
 
@@ -245,38 +344,82 @@
     });
 
     video.addEventListener("ended", () => {
-      const next = CLIPS[current]?.next;
-      if (next) play(next);
+      if (sleeping) {
+        const loopClip = entries.find((e) => e.file === "sleep-loop.webm");
+        if (loopClip) playFile(loopClip.file, true);
+        return;
+      }
+      idle();
     });
 
     closeButton.addEventListener("click", (event) => {
       event.stopPropagation();
-      hide();
+      root.hidden = true;
+      restore.hidden = false;
+      hidden = true;
+      localStorage.setItem(STORE_HIDDEN, "1");
+      window.clearTimeout(idleTimer);
+      window.clearTimeout(bubbleTimer);
+      bubble.hidden = true;
     });
 
-    restore.addEventListener("click", show);
+    restore.addEventListener("click", () => {
+      root.hidden = false;
+      restore.hidden = true;
+      hidden = false;
+      localStorage.removeItem(STORE_HIDDEN);
+      idle();
+      scheduleIdleAction();
+    });
 
     window.addEventListener("resize", () => {
-      if (localStorage.getItem(STORE_POS)) applyPosition();
+      x = clampXBase(x);
+      y = clampYBase(y);
+      apply();
     });
 
-    const start = () => {
+    const start = async () => {
       if (!supportsAlpha) {
         root.remove();
         restore.remove();
         return;
       }
-      applyPosition();
+
+      // 恢复上次位置
+      const saved = localStorage.getItem(STORE_POS);
+      if (saved) {
+        try {
+          const pos = JSON.parse(saved) as { left: number; top: number };
+          x = pos.left;
+          y = pos.top;
+        } catch {
+          localStorage.removeItem(STORE_POS);
+        }
+      } else {
+        const rect = root.getBoundingClientRect();
+        x = rect.left;
+        y = rect.top;
+      }
+      apply();
+
       if (localStorage.getItem(STORE_HIDDEN)) {
         root.hidden = true;
         restore.hidden = false;
+        hidden = true;
         return;
       }
-      play("idle");
+
+      idle();
+
+      try {
+        entries = await (await fetch(MANIFEST, { cache: "force-cache" })).json();
+      } catch {
+        entries = [];
+      }
       scheduleIdleAction();
     };
 
-    if (document.readyState === "complete") start();
+    if (document.readyState === "complete") void start();
     else window.addEventListener("load", start, { once: true });
   }
 </script>

@@ -1,20 +1,32 @@
 # 看板娘素材
 
-`*.webm` 均为 **VP9-alpha 透明视频**，640×360，来源为 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（`dsh-pet/assets/webm/`），只取了本站用到的十二段，并改成 ASCII 文件名。
+`*.webm` 都是 **VP9-alpha 透明视频**，640×360，取自 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 的 `dsh-pet/assets/webm/`，**全部 109 段**都在这里。
 
-| 文件                                                                | 原动画               |
-| :------------------------------------------------------------------ | :------------------- |
-| `idle.webm`                                                         | 待机呼吸休闲         |
-| `tap-joy.webm` / `tap-shy.webm` / `tap-pout.webm` / `tap-wave.webm` | 点击回应四段         |
-| `sleep-in.webm` / `sleep-loop.webm` / `sleep-out.webm`              | 睡觉开始、循环、起来 |
-| `hum.webm`                                                          | 悠闲哼歌             |
-| `yawn.webm`                                                         | 哈欠连天             |
-| `mirror.webm`                                                       | 照镜子               |
-| `code.webm`                                                         | 写代码               |
+`manifest.json` 是清单，组件按它随机抽动作：
+
+```json
+[{ "file": "idle.webm", "label": "待机呼吸休闲", "kind": "idle", "size": 441000 }]
+```
+
+| 字段    | 含义                                                                                         |
+| :------ | :------------------------------------------------------------------------------------------- |
+| `file`  | 实际文件名。常驻的十二段用了语义名（`idle`、`tap-joy`、`sleep-in`…），其余按 `clip-NNN` 编号 |
+| `label` | 原始中文动画名，方便对照上游                                                                 |
+| `kind`  | 分类，见下表，决定何时播                                                                     |
+| `size`  | 字节数，用于校验下载完整性                                                                   |
+
+| `kind`                                               | 数量 | 用途                                     |
+| :--------------------------------------------------- | :--- | :--------------------------------------- |
+| `idle`                                               | 2    | 待机循环                                 |
+| `tap`                                                | 5    | 点一下的回应                             |
+| `sleep`                                              | 3    | 双击睡觉：入睡、循环、醒来               |
+| `play` / `eat` / `season` / `talk` / `move` / `misc` | 86   | 随机小动作池                             |
+| `balance` / `work`                                   | 12   | 上游用于余额与工作状态，这里也进了随机池 |
+| `drag`                                               | 1    | 拖拽反馈，暂未用                         |
 
 ## 署名与许可
 
-- 代码与素材仓库：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（素材禁止商用）
+- 素材仓库：[PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet)（**素材禁止商用**）
 - 形象：社区二创的 DeepSeek「大肥鱼」（鲸鱼娘），非官方形象。原型「溟月」出自 B 站 [@上善无形](https://space.bilibili.com/4456176)，DeepSeek 版设计出自 B 站 [@ZipZipPipe](https://space.bilibili.com/4168597)
 - 形象许可：[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans)，署名 · 非商业 · 相同方式共享
 
