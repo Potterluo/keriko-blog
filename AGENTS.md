@@ -29,7 +29,7 @@ Frontmatter 的字段与校验规则在 `src/content.config.ts`，写错会在 `
 
 - 标题只用 `##` 分节、`###` 分小节。一节读一屏为准，太长的节要拆。
 - 表格：主题给 `td` 设了 `white-space: nowrap`，超宽表格会横向滚动。单元格控制在十几个字内，内容长就改成段落或列表。
-- 代码块标真实语言；需要默认展开时在围栏后加 `nocollapse`（例如 ` ```text nocollapse `）。
+- 代码块标真实语言。默认全展开，确实需要折叠时在围栏后加 `collapse`。
 - 公式用 `$$...$$`（行间）和 `$...$`（行内）。实现在 `src/integrations/mathKatex/`，由 satteri 的 `features.math` 解析、KaTeX 渲染。**不要**再用 ```text 代码块模拟公式。
 - 提示块用 `> [!IMPORTANT]`、`> [!NOTE]`，由 `src/integrations/markdownCallout` 处理。
 - 链接规则见下方 URL Conventions：站内路径结尾不加斜杠，优先用 `getPostHref` 这类 helper。
