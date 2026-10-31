@@ -36,3 +36,4 @@ pnpm-debug.log*
 # local scratch (audio, transcripts, probe scripts)
 .transcribe/
 .frames/
+__pycache__/
