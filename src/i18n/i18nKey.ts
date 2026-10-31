@@ -24,6 +24,7 @@ export const I18nKey = {
   popularTags: "home.popularTags",
   featuredPosts: "home.featuredPosts",
   recentUpdates: "home.recentUpdates",
+  footerPetCredit: "footer.petCredit",
   statsPosts: "stats.posts",
   statsCategories: "stats.categories",
   statsTags: "stats.tags",

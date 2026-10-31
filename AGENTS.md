@@ -183,6 +183,26 @@ python scripts/video-frames.py --bvid BV15z4C6SEHT --part 9 --out .frames/p9 --i
 
 首页侧栏顺序：站点概览 → 最近更新 → 热门标签 → 引言。最近更新按 `updatedAt ?? publishedAt` 倒序取 5 篇；改过旧文就补 `updatedAt`，它才会出现在这一栏。
 
+### 看板娘
+
+站里左下角那只来自 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)，是 640×360 的 **透明 webm**，不是 Live2D。交互约定照 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)：贴角落、可拖、点一下有回应、关掉能叫回来。
+
+| 项     | 位置 / 约定                                                                               |
+| :----- | :---------------------------------------------------------------------------------------- |
+| 组件   | `src/components/ui/BlogPet.astro`，挂在 `BaseLayout`，全站生效                            |
+| 素材   | `public/pet/*.webm`，十二段，ASCII 文件名                                                 |
+| 动作表 | 组件里的 `CLIPS`；一次性动作播完按 `next` 回待机                                          |
+| 裁切   | 角色只占源片中间一块，窗口用三个百分数放大露出，注释里写了重算方法                        |
+| 状态   | `localStorage`：`pet:hidden` 收起、`pet:pos` 拖动后的位置                                 |
+| 降级   | Safari 不认 webm 的 alpha 通道，检测到就直接不挂载；`prefers-reduced-motion` 下不随机动作 |
+| 移动端 | `tablet` 以下不显示                                                                       |
+
+署名是硬要求：形象许可 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans)，且作者约定二创作品在公开渠道须附项目地址。页脚有一行，`public/pet/README.md` 里有完整出处，改素材时别把这两处删了。
+
+加新动作的步骤：从 dsh-pet 的 `dsh-pet/assets/webm/` 取文件 → 改成 ASCII 名放进 `public/pet/` → 在 `CLIPS` 里加一条（循环的标 `loop`，一次性的标 `next: "idle"`）→ 在 `README.md` 的表格补一行。素材禁止商用，个人非商业博客可以用。
+
+首屏只加载 `idle.webm`（约 430 KB），其余按需，新增片段请控制体积。
+
 ## 发布前检查
 
 1. `npm run format` —— 只格式化，会重排表格列宽。

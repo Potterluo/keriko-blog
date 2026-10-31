@@ -1,0 +1,282 @@
+---
+// 看板娘：自己托管的透明视频动画，交互约定参考 live2d-widget（角落、拖动、点击回应、关了能叫回来）。
+// 素材与署名见 public/pet/README.md，形象许可 CC BY-NC-SA 4.0。
+---
+
+<div
+  class="pet-root pointer-events-none fixed bottom-4 left-4 z-30 hidden select-none tablet:block"
+  data-pet
+  data-pet-ready
+  transition:persist="blog-pet"
+>
+  <div
+    class="rounded-2xl mb-2 max-w-56 border border-border bg-panel px-3 py-2 text-xs leading-relaxed text-text-soft shadow-sm"
+    data-pet-bubble
+    hidden
+  >
+    <span data-pet-bubble-text></span>
+  </div>
+
+  <!--
+    源片是 640×360 的透明视频，角色只占中间一块（实测十二段动画的并集包围盒：
+    x=189..467、y=38..342）。窗口按这个包围盒裁切，把视频放大平移让角色填满
+    140×152 的框。改尺寸要按 S=140/278 重算这三个百分数，别凭感觉调。
+  -->
+  <div class="pointer-events-auto relative w-[140px]" data-pet-stage>
+    <div class="relative h-[152px] w-full overflow-hidden" data-pet-window>
+      <video
+        class="absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none cursor-grab active:cursor-grabbing"
+        data-pet-video
+        muted
+        playsinline
+        preload="none"
+        aria-hidden="true"></video>
+    </div>
+
+    <button
+      class="absolute -top-1 -right-1 grid size-6 cursor-pointer place-items-center rounded-full border border-border bg-panel text-xs text-muted transition-colors hover:text-accent-strong"
+      type="button"
+      data-pet-close
+      aria-label="收起看板娘">×</button
+    >
+
+    <a
+      class="mt-1 block text-center text-[10px] text-muted-light no-underline transition-colors hover:text-accent-strong"
+      href="https://github.com/PC2005-cloud/dsh-pet"
+      target="_blank"
+      rel="noreferrer">pet by dsh-pet</a
+    >
+  </div>
+</div>
+
+<button
+  class="fixed bottom-4 left-4 z-30 hidden cursor-pointer rounded-full border border-border bg-panel px-3 py-1.5 text-xs text-muted shadow-sm transition-colors hover:text-accent-strong"
+  type="button"
+  data-pet-restore
+  hidden
+  aria-label="叫回看板娘">看板娘</button
+>
+
+<script>
+  type Clip = { file: string; loop?: boolean; next?: string };
+
+  const CLIPS: Record<string, Clip> = {
+    idle: { file: "idle.webm", loop: true },
+    "tap-joy": { file: "tap-joy.webm", next: "idle" },
+    "tap-shy": { file: "tap-shy.webm", next: "idle" },
+    "tap-pout": { file: "tap-pout.webm", next: "idle" },
+    "tap-wave": { file: "tap-wave.webm", next: "idle" },
+    "sleep-in": { file: "sleep-in.webm", next: "sleep-loop" },
+    "sleep-loop": { file: "sleep-loop.webm", loop: true },
+    "sleep-out": { file: "sleep-out.webm", next: "idle" },
+    hum: { file: "hum.webm", next: "idle" },
+    yawn: { file: "yawn.webm", next: "idle" },
+    mirror: { file: "mirror.webm", next: "idle" },
+    code: { file: "code.webm", next: "idle" },
+  };
+
+  const TAPS = ["tap-joy", "tap-shy", "tap-pout", "tap-wave"];
+  const IDLE_ACTIONS = ["hum", "yawn", "mirror", "code"];
+  const QUOTES = [
+    "欢迎来玩，随便逛逛。",
+    "这里的每一篇都是慢慢写的。",
+    "KV Cache 那几篇花的时间最久。",
+    "按 Ctrl+K 可以搜文章。",
+    "看累了就歇会儿。",
+    "双击我可以睡觉。",
+    "拖着我到处走也行。",
+    "文章里有问题，欢迎到 GitHub 提。",
+  ];
+
+  const root = document.querySelector<HTMLElement>("[data-pet]");
+  const restore = document.querySelector<HTMLButtonElement>("[data-pet-restore]");
+  const video = root?.querySelector<HTMLVideoElement>("[data-pet-video]");
+  const stage = root?.querySelector<HTMLElement>("[data-pet-stage]");
+  const closeButton = root?.querySelector<HTMLButtonElement>("[data-pet-close]");
+  const bubble = root?.querySelector<HTMLElement>("[data-pet-bubble]");
+  const bubbleText = root?.querySelector<HTMLElement>("[data-pet-bubble-text]");
+
+  if (root && restore && video && stage && closeButton && bubble && bubbleText) {
+    const STORE_HIDDEN = "pet:hidden";
+    const STORE_POS = "pet:pos";
+    const base = "/pet/";
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+
+    let current = "idle";
+    let sleeping = false;
+    let dragging = false;
+    let moved = false;
+    let startX = 0;
+    let startY = 0;
+    let originLeft = 0;
+    let originTop = 0;
+    let idleTimer: number | undefined;
+    let bubbleTimer: number | undefined;
+
+    // Safari 不认 webm 的 alpha 通道，透明会渲染成黑底，干脆不显示。
+    const supportsAlpha = !isSafari && video.canPlayType('video/webm; codecs="vp9"') !== "";
+
+    const play = (name: string) => {
+      const clip = CLIPS[name];
+      if (!clip) return;
+      current = name;
+      if (video.dataset.clip !== name) {
+        video.dataset.clip = name;
+        video.src = base + clip.file;
+      }
+      if (clip.loop) video.loop = true;
+      else video.loop = false;
+      void video.play().catch(() => {});
+    };
+
+    const say = (text: string, hold = 3600) => {
+      bubbleText.textContent = text;
+      bubble.hidden = false;
+      window.clearTimeout(bubbleTimer);
+      bubbleTimer = window.setTimeout(() => {
+        bubble.hidden = true;
+      }, hold);
+    };
+
+    const scheduleIdleAction = () => {
+      window.clearTimeout(idleTimer);
+      if (reduceMotion.matches || sleeping) return;
+      const wait = 22000 + Math.random() * 20000;
+      idleTimer = window.setTimeout(() => {
+        if (document.visibilityState === "visible" && !sleeping) {
+          play(IDLE_ACTIONS[Math.floor(Math.random() * IDLE_ACTIONS.length)]);
+        }
+        scheduleIdleAction();
+      }, wait);
+    };
+
+    const persistPosition = () => {
+      const rect = root.getBoundingClientRect();
+      localStorage.setItem(STORE_POS, JSON.stringify({ left: rect.left, top: rect.top }));
+    };
+
+    const applyPosition = () => {
+      const raw = localStorage.getItem(STORE_POS);
+      if (!raw) return;
+      try {
+        const { left, top } = JSON.parse(raw) as { left: number; top: number };
+        const maxLeft = window.innerWidth - root.offsetWidth - 8;
+        const maxTop = window.innerHeight - root.offsetHeight - 8;
+        root.style.left = `${Math.min(Math.max(8, left), Math.max(8, maxLeft))}px`;
+        root.style.top = `${Math.min(Math.max(8, top), Math.max(8, maxTop))}px`;
+        root.style.bottom = "auto";
+      } catch {
+        localStorage.removeItem(STORE_POS);
+      }
+    };
+
+    const hide = () => {
+      root.hidden = true;
+      restore.hidden = false;
+      localStorage.setItem(STORE_HIDDEN, "1");
+    };
+
+    const show = () => {
+      root.hidden = false;
+      restore.hidden = true;
+      localStorage.removeItem(STORE_HIDDEN);
+      play("idle");
+      scheduleIdleAction();
+    };
+
+    const wake = () => {
+      sleeping = false;
+      play("sleep-out");
+      scheduleIdleAction();
+    };
+
+    const sleep = () => {
+      sleeping = true;
+      play("sleep-in");
+      say("那我睡一会儿…", 2600);
+      window.clearTimeout(idleTimer);
+    };
+
+    // 拖拽：位移小于 6px 当作点击，避免拖完又触发回应动画。
+    stage.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      dragging = true;
+      moved = false;
+      startX = event.clientX;
+      startY = event.clientY;
+      const rect = root.getBoundingClientRect();
+      originLeft = rect.left;
+      originTop = rect.top;
+      stage.setPointerCapture(event.pointerId);
+    });
+
+    stage.addEventListener("pointermove", (event) => {
+      if (!dragging) return;
+      const dx = event.clientX - startX;
+      const dy = event.clientY - startY;
+      if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+      if (!moved) return;
+      root.style.left = `${Math.max(8, Math.min(originLeft + dx, window.innerWidth - root.offsetWidth - 8))}px`;
+      root.style.top = `${Math.max(8, Math.min(originTop + dy, window.innerHeight - root.offsetHeight - 8))}px`;
+      root.style.bottom = "auto";
+    });
+
+    stage.addEventListener("pointerup", (event) => {
+      if (!dragging) return;
+      dragging = false;
+      stage.releasePointerCapture(event.pointerId);
+      if (moved) {
+        persistPosition();
+        return;
+      }
+      // 点击：睡着时叫醒，否则随机回应并说一句。
+      if (sleeping) {
+        wake();
+        return;
+      }
+      play(TAPS[Math.floor(Math.random() * TAPS.length)]);
+      say(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
+    });
+
+    stage.addEventListener("dblclick", () => {
+      if (sleeping) wake();
+      else sleep();
+    });
+
+    video.addEventListener("ended", () => {
+      const next = CLIPS[current]?.next;
+      if (next) play(next);
+    });
+
+    closeButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      hide();
+    });
+
+    restore.addEventListener("click", show);
+
+    window.addEventListener("resize", () => {
+      if (localStorage.getItem(STORE_POS)) applyPosition();
+    });
+
+    const start = () => {
+      if (!supportsAlpha) {
+        root.remove();
+        restore.remove();
+        return;
+      }
+      applyPosition();
+      if (localStorage.getItem(STORE_HIDDEN)) {
+        root.hidden = true;
+        restore.hidden = false;
+        return;
+      }
+      play("idle");
+      scheduleIdleAction();
+    };
+
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+  }
+</script>

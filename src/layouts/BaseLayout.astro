@@ -1,5 +1,6 @@
 ---
 import Footer from "@/components/layout/Footer.astro";
+import BlogPet from "@/components/ui/BlogPet.astro";
 import NavigationBar from "@/components/layout/NavigationBar.astro";
 import CommentViewCounts from "@/components/content/CommentViewCounts.astro";
 import { fontConfig } from "@/config/fontConfig";
@@ -156,5 +157,6 @@ const faviconLinks = siteConfig.favicon.filter(({ src }) => src.trim());
       </div>
     </div>
     <CommentViewCounts />
+    <BlogPet />
   </body>
 </html>

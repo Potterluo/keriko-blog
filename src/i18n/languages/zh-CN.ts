@@ -27,6 +27,7 @@ export const zhCN = {
   [I18nKey.popularTags]: "热门标签",
   [I18nKey.featuredPosts]: "精选文章",
   [I18nKey.recentUpdates]: "最近更新",
+  [I18nKey.footerPetCredit]: "看板娘形象：大肥鱼（鲸鱼娘），二创自",
   [I18nKey.statsPosts]: "文章",
   [I18nKey.statsCategories]: "分类",
   [I18nKey.statsTags]: "标签",
