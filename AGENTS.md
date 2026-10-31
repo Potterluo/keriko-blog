@@ -185,27 +185,28 @@ python scripts/video-frames.py --bvid BV15z4C6SEHT --part 9 --out .frames/p9 --i
 
 ### 看板娘
 
-站里左下角那只来自 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)，是 640×360 的 **透明 webm**，不是 Live2D。交互参考 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)：贴角落、可拖可甩、点一下有回应、关掉能叫回来。
+站里左下角那只来自 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet)，是 640×360 的 **透明 webm**，不是 Live2D。交互参考 [live2d-widget](https://github.com/stevenjoezhang/live2d-widget)：贴角落、可拖可甩、点一下换动作、双击睡觉。
 
-| 项     | 位置 / 约定                                                                                                       |
-| :----- | :---------------------------------------------------------------------------------------------------------------- |
-| 组件   | `src/components/ui/BlogPet.astro`，挂在 `BaseLayout`，全站生效                                                    |
-| 素材   | `public/pet/*.webm`，**109 段全量**，约 53 MB                                                                     |
-| 清单   | `public/pet/manifest.json`：`file`、`label`、`kind`、`size`，运行时 fetch                                         |
-| 播放   | 常驻 `idle.webm` 循环；随机动作按 `kind` 抽，播完回待机；随机池排除 `sleep`/`tap`/`drag`                          |
-| 物理   | 拖动记速度，松手后重力 + 撞墙反弹 + 摩擦；落地与点击有挤压回弹                                                    |
-| 预处理 | 随机动作前用 `fetch(..., {cache:'force-cache'})` 预热，避免起帧卡顿                                               |
-| 状态   | `localStorage`：`pet:hidden` 收起、`pet:pos` 位置                                                                 |
-| 降级   | Safari 不认 webm 的 alpha，直接不挂载；`prefers-reduced-motion` 下不随机动作；`tablet` 以下不显示                 |
-| 画中画 | 视频设了 `pointer-events-none` + `disablepictureinpicture`，原生控件按钮一律用 CSS 隐藏，否则悬停会冒出画中画按钮 |
+| 项     | 位置 / 约定                                                                                           |
+| :----- | :---------------------------------------------------------------------------------------------------- |
+| 组件   | `src/components/ui/BlogPet.astro`，挂在 `BaseLayout`，全站生效                                        |
+| 素材   | `public/pet/*.webm`，**109 段全量**，约 53 MB                                                         |
+| 清单   | `public/pet/manifest.json`：`file`、`label`、`kind`、`size`，运行时 fetch                             |
+| 播放   | 两个 `<video>` 双缓冲：一个在播，另一个在后台 `load` 下一段，切换只换 opacity，不改正在播的 src       |
+| 点击   | 用预载好的那段（从全量池子随机抽），所以点下去是瞬间换，不会闪                                        |
+| 双击   | 睡觉：`sleep-in` → 循环 `sleep-loop` → 点一下 `sleep-out` 醒来                                        |
+| 物理   | 拖动记速度，松手后重力 + 撞墙反弹 + 摩擦；挤压动画同一时刻只跑一个                                    |
+| 状态   | `localStorage` 只存位置 `pet:pos`；没有关闭按钮，也不做隐藏                                           |
+| 降级   | Safari 不认 webm 的 alpha，直接不挂载；`prefers-reduced-motion` 下不随机动作；`tablet` 以下不显示     |
+| 画中画 | 视频 `pointer-events-none` + `disablepictureinpicture`，原生控件用 CSS 隐藏，否则悬停会冒出画中画按钮 |
 
 署名是硬要求：形象许可 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans)，作者约定二创作品在公开渠道须附项目地址。页脚一行、角色下方一行、`public/pet/README.md` 完整出处，改素材时都别删。
 
-改尺寸：窗框 `w-[200px]` / `h-[217px]`，视频用 `w-[230%]`、`left-[-68%]`、`top-[-12.6%]` 三个百分数放大平移。这三个数由角色包围盒（x=189..467、y=38..342）算出，等比缩放时不用改；改宽高比要重算。
+改尺寸：窗框 `w-[200px]` / `h-[217px]`，视频用 `w-[230%]`、`left-[-68%]`、`top-[-12.6%]` 三个百分数放大平移。这三个数由角色包围盒（x=189..467、y=38..342）算出，等比缩放时不用改；改宽高比要重算。两个 video 都要跟着改。
 
 加新动作：从上游取 webm → 放 `public/pet/` → 在 `manifest.json` 加一条（`kind` 决定何时播）→ `README.md` 补一行。素材禁止商用，个人非商业博客可用。
 
-体积注意：首屏只加载 `idle`（约 430 KB），随机动作按需；但整个目录约 53 MB，别在构建里再做一次全量拷贝。
+体积注意：首屏只加载 `idle`（约 430 KB），其余按需预载；整个目录约 53 MB，别在构建里再做全量拷贝。
 
 ## 发布前检查
 

@@ -19,28 +19,31 @@
 
   <!--
     源片是 640×360 的透明视频，角色只占中间一块（实测并集包围盒 x=189..467、y=38..342）。
-    窗口按这个包围盒裁切，球视频放大平移让角色填满 200×217 的框。
-    改尺寸时按 S=200/278 重算这三个百分数，别凭感觉调。
+    窗口按这个包围盒裁切，视频放大平移让角色填满 200×217 的框。
+    两个 video 轮流上屏：一个在播，另一个在后台把下一段 load 好，切换时直接换，
+    否则改 src 会有一帧空档，看起来就是闪一下。改尺寸按 S=200/278 重算三个百分数。
   -->
-  <div class="group/pet pointer-events-auto relative w-[200px] origin-bottom" data-pet-stage>
+  <div class="pointer-events-auto relative w-[200px]" data-pet-stage>
     <div class="relative h-[217px] w-full overflow-hidden" data-pet-window>
       <video
-        class="pointer-events-none absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none"
+        class="pointer-events-none absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none opacity-0 transition-opacity duration-75"
         data-pet-video
         muted
         playsinline
-        preload="none"
+        preload="auto"
+        disablepictureinpicture
+        disableRemotePlayback
+        aria-hidden="true"></video>
+      <video
+        class="pointer-events-none absolute top-[-12.6%] left-[-68%] w-[230%] max-w-none opacity-0 transition-opacity duration-75"
+        data-pet-video
+        muted
+        playsinline
+        preload="auto"
         disablepictureinpicture
         disableRemotePlayback
         aria-hidden="true"></video>
     </div>
-
-    <button
-      class="absolute -top-1 -right-1 grid size-6 cursor-pointer place-items-center rounded-full border border-border bg-panel text-xs text-muted opacity-0 transition-[opacity,color] duration-150 group-hover/pet:opacity-100 hover:text-accent-strong focus-visible:opacity-100"
-      type="button"
-      data-pet-close
-      aria-label="收起看板娘">×</button
-    >
 
     <a
       class="mt-1 block text-center text-[10px] text-muted-light no-underline transition-colors hover:text-accent-strong"
@@ -50,14 +53,6 @@
     >
   </div>
 </div>
-
-<button
-  class="fixed bottom-4 left-4 z-30 hidden cursor-pointer rounded-full border border-border bg-panel px-3 py-1.5 text-xs text-muted shadow-sm transition-colors hover:text-accent-strong"
-  type="button"
-  data-pet-restore
-  hidden
-  aria-label="叫回看板娘">看板娘</button
->
 
 <style>
   /* 浏览器自带的画中画按钮浮在视频上，看着像坏了，一律藏掉 */
@@ -86,29 +81,28 @@
   ];
 
   const root = document.querySelector<HTMLElement>("[data-pet]");
-  const restore = document.querySelector<HTMLButtonElement>("[data-pet-restore]");
-  const video = root?.querySelector<HTMLVideoElement>("[data-pet-video]");
   const stage = root?.querySelector<HTMLElement>("[data-pet-stage]");
   const windowEl = root?.querySelector<HTMLElement>("[data-pet-window]");
-  const closeButton = root?.querySelector<HTMLButtonElement>("[data-pet-close]");
   const bubble = root?.querySelector<HTMLElement>("[data-pet-bubble]");
   const bubbleText = root?.querySelector<HTMLElement>("[data-pet-bubble-text]");
+  const videos = Array.from(root?.querySelectorAll<HTMLVideoElement>("[data-pet-video]") ?? []);
 
-  if (root && restore && video && stage && windowEl && closeButton && bubble && bubbleText) {
-    const STORE_HIDDEN = "pet:hidden";
+  if (root && stage && windowEl && bubble && bubbleText && videos.length === 2) {
     const STORE_POS = "pet:pos";
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+    const supportsAlpha = !isSafari && videos[0].canPlayType('video/webm; codecs="vp9"') !== "";
 
     let entries: Entry[] = [];
+    let active = 0; // 当前上屏的 video 下标
+    let prepared: { entry: Entry | null; el: HTMLVideoElement } | null = null;
     let sleeping = false;
-    let hidden = false;
     let idleTimer: number | undefined;
     let bubbleTimer: number | undefined;
+    let squashTimer: number | undefined;
     let raf = 0;
     let recent: string[] = [];
 
-    // —— 位置与物理 ——
     let x = 16;
     let y = 0;
     let vx = 0;
@@ -117,18 +111,22 @@
     let moved = false;
     let sample: { t: number; x: number; y: number }[] = [];
 
-    const supportsAlpha = !isSafari && video.canPlayType('video/webm; codecs="vp9"') !== "";
+    const petRoot = root;
 
-    const playFile = (file: string, loop = false) => {
-      if (video.dataset.clip !== file) {
-        video.dataset.clip = file;
-        video.src = BASE + file;
-      }
-      video.loop = loop;
-      void video.play().catch(() => {});
+    const clamp = (value: number, max: number) => Math.max(8, Math.min(value, max));
+    const maxX = () => window.innerWidth - petRoot.offsetWidth - 8;
+    const maxY = () => window.innerHeight - petRoot.offsetHeight - 8;
+
+    const apply = () => {
+      petRoot.style.left = `${x}px`;
+      petRoot.style.top = `${y}px`;
+      petRoot.style.bottom = "auto";
     };
 
-    const idle = () => playFile(IDLE, true);
+    const persist = () => {
+      const rect = petRoot.getBoundingClientRect();
+      localStorage.setItem(STORE_POS, JSON.stringify({ left: rect.left, top: rect.top }));
+    };
 
     const say = (text: string, hold = 3600) => {
       bubbleText.textContent = text;
@@ -139,82 +137,57 @@
       }, hold);
     };
 
-    // 挤压：落地或点击时压一下再弹回来
+    // 挤压：同一时刻只跑一个，计时器叠起来会看起来一抖一抖
     const squash = (sx: number, sy: number) => {
+      window.clearTimeout(squashTimer);
       windowEl.style.transition = "transform 90ms cubic-bezier(0.3, 0.8, 0.4, 1)";
       windowEl.style.transform = `scale(${sx}, ${sy})`;
-      window.setTimeout(() => {
+      squashTimer = window.setTimeout(() => {
         windowEl.style.transform = "scale(1, 1)";
       }, 90);
     };
 
-    const apply = () => {
-      root.style.left = `${x}px`;
-      root.style.top = `${y}px`;
-      root.style.bottom = "auto";
+    // —— 双缓冲播放 ——
+
+    const free = () => videos[1 - active];
+
+    const load = (el: HTMLVideoElement, file: string) => {
+      if (el.dataset.clip === file) return;
+      el.dataset.clip = file;
+      el.src = BASE + file;
+      el.load();
     };
 
-    const persist = () => {
-      const rect = root.getBoundingClientRect();
-      localStorage.setItem(STORE_POS, JSON.stringify({ left: rect.left, top: rect.top }));
+    const swapIn = (el: HTMLVideoElement, loop: boolean) => {
+      el.loop = loop;
+      void el.play().catch(() => {});
+      el.style.opacity = "1";
+      videos[active].style.opacity = "0";
+      active = videos.indexOf(el);
     };
 
-    // 甩出去：重力 + 撞墙反弹 + 摩擦，落地压一下
-    const fling = () => {
-      window.cancelAnimationFrame(raf);
-      let last = 0;
-      const gravity = 0.0026;
-      const bounce = 0.58;
-      const friction = 0.994;
-
-      const step = (ts: number) => {
-        const dt = last ? Math.min(34, ts - last) : 16;
-        last = ts;
-        x += vx * dt;
-        y += vy * dt;
-        vy += gravity * dt;
-
-        const maxX = window.innerWidth - root.offsetWidth - 8;
-        const maxY = window.innerHeight - root.offsetHeight - 8;
-
-        if (x < 8) {
-          x = 8;
-          vx = -vx * bounce;
-          squash(1.1, 0.9);
-        } else if (x > maxX) {
-          x = maxX;
-          vx = -vx * bounce;
-          squash(1.1, 0.9);
-        }
-        if (y < 8) {
-          y = 8;
-          vy = -vy * bounce;
-        } else if (y > maxY) {
-          y = maxY;
-          vy = -vy * bounce * 0.85;
-          vx *= 0.92;
-          if (Math.abs(vy) > 0.25) squash(1.14, 0.86);
-        }
-
-        vx *= friction;
-        vy *= friction;
-        apply();
-
-        const resting = Math.abs(vx) < 0.02 && Math.abs(vy) < 0.02 && y >= maxY - 1.5;
-        if (resting) {
-          vx = 0;
-          vy = 0;
-          persist();
-          return;
-        }
-        raf = window.requestAnimationFrame(step);
+    const run = (entry: Entry, loop = false) => {
+      // 已经预载好的直接播，没有空档
+      if (prepared && prepared.entry?.file === entry.file) {
+        swapIn(prepared.el, loop);
+        prepared = null;
+        void prepareNext();
+        return;
+      }
+      const el = free();
+      load(el, entry.file);
+      const begin = () => {
+        if (el.dataset.clip !== entry.file) return;
+        swapIn(el, loop);
+        void prepareNext();
       };
-      raf = window.requestAnimationFrame(step);
+      if (el.readyState >= 2) begin();
+      else el.addEventListener("canplay", begin, { once: true });
     };
 
-    // —— 随机动作 ——
+    const idle = () => run({ file: IDLE, label: "待机呼吸休闲", kind: "idle", size: 0 }, true);
 
-    const pool = () => entries.filter((e) => !["sleep", "tap", "drag"].includes(e.kind) && e.file !== IDLE);
+    const pool = () => entries.filter((e) => !["sleep", "drag"].includes(e.kind) && e.file !== IDLE);
 
     const pick = (candidates: Entry[], count = 1) => {
       const picked: Entry[] = [];
@@ -223,31 +196,36 @@
         const from = fresh.length ? fresh : candidates;
         const chosen = from[Math.floor(Math.random() * from.length)];
         picked.push(chosen);
-        recent = [...recent, chosen.file].slice(-12);
+        recent = [...recent, chosen.file].slice(-14);
       }
       return picked;
     };
 
-    const prefetch = (file: string) => {
-      // 预热 HTTP 缓存，轮到它播时能立刻起帧
-      void fetch(BASE + file, { cache: "force-cache" }).catch(() => {});
+    // 把下一段装进空着的那个 video，点的时候才能瞬间切
+    const prepareNext = async () => {
+      if (!entries.length || sleeping) return;
+      const el = free();
+      const [next, after] = pick(pool(), 2);
+      if (!next) return;
+      load(el, next.file);
+      prepared = { entry: next, el };
+      if (after) void fetch(BASE + after.file, { cache: "force-cache" }).catch(() => {});
     };
 
-    const playOnce = (file: string) => {
-      playFile(file, false);
-      if (Math.random() < 0.25) say(QUOTES[Math.floor(Math.random() * QUOTES.length)], 2600);
-    };
+    // —— 随机动作 ——
+
+    // 有预载好的就直接用那段，没有才现抽。点击和随机动作都走这里，
+    // 这样切换永远是「已经解码完的那一帧」，不会闪。
+    const takeNext = () => prepared?.entry ?? pick(pool())[0];
 
     const scheduleIdleAction = () => {
       window.clearTimeout(idleTimer);
-      if (reduceMotion.matches || sleeping || hidden) return;
+      if (reduceMotion.matches || sleeping) return;
       const wait = 6000 + Math.random() * 9000;
       idleTimer = window.setTimeout(() => {
-        if (document.visibilityState === "visible" && !sleeping && !hidden && entries.length) {
-          const [next] = pick(pool());
-          if (next) playOnce(next.file);
-          const [after] = pick(pool(), 2);
-          if (after) prefetch(after.file);
+        if (document.visibilityState === "visible" && !sleeping) {
+          const next = takeNext();
+          if (next) run(next);
         }
         scheduleIdleAction();
       }, wait);
@@ -256,19 +234,21 @@
     const wake = () => {
       sleeping = false;
       const out = entries.find((e) => e.file === "sleep-out.webm");
-      playFile(out ? out.file : IDLE, !out);
+      if (out) run(out);
+      else idle();
       scheduleIdleAction();
     };
 
     const sleep = () => {
       sleeping = true;
       const inClip = entries.find((e) => e.file === "sleep-in.webm");
-      playFile(inClip ? inClip.file : IDLE, !inClip);
+      if (inClip) run(inClip);
+      else idle();
       say("那我睡一会儿…", 2600);
       window.clearTimeout(idleTimer);
     };
 
-    // —— 交互 ——
+    // —— 拖拽与物理 ——
 
     stage.addEventListener("pointerdown", (event) => {
       if (event.button !== 0) return;
@@ -277,7 +257,7 @@
       vy = 0;
       dragging = true;
       moved = false;
-      const rect = root.getBoundingClientRect();
+      const rect = petRoot.getBoundingClientRect();
       x = rect.left;
       y = rect.top;
       sample = [{ t: performance.now(), x: event.clientX, y: event.clientY }];
@@ -291,20 +271,12 @@
       const dx = event.clientX - last.x;
       const dy = event.clientY - last.y;
       if (Math.abs(event.clientX - sample[0].x) + Math.abs(event.clientY - sample[0].y) > 6) moved = true;
-      x = clampXBase(x + dx);
-      y = clampYBase(y + dy);
+      x = clamp(x + dx, maxX());
+      y = clamp(y + dy, maxY());
       apply();
       sample.push({ t: performance.now(), x: event.clientX, y: event.clientY });
       if (sample.length > 6) sample.shift();
     });
-
-    const petRoot = root;
-    function clampXBase(value: number) {
-      return Math.max(8, Math.min(value, window.innerWidth - petRoot.offsetWidth - 8));
-    }
-    function clampYBase(value: number) {
-      return Math.max(8, Math.min(value, window.innerHeight - petRoot.offsetHeight - 8));
-    }
 
     stage.addEventListener("pointerup", (event) => {
       if (!dragging) return;
@@ -315,14 +287,10 @@
         const first = sample[0];
         const last = sample[sample.length - 1];
         const dt = Math.max(16, last.t - first.t);
-        // 甩出去的速度（px/ms），上限防止一甩飞天
         vx = Math.max(-3, Math.min(3, (last.x - first.x) / dt));
         vy = Math.max(-3, Math.min(3, (last.y - first.y) / dt));
-        if (Math.abs(vx) > 0.08 || Math.abs(vy) > 0.08) {
-          fling();
-        } else {
-          persist();
-        }
+        if (Math.abs(vx) > 0.08 || Math.abs(vy) > 0.08) fling();
+        else persist();
         return;
       }
 
@@ -330,11 +298,11 @@
         wake();
         return;
       }
-      // 点一下：Q 弹一下，随机播一段回应
-      squash(1.12, 0.88);
-      const taps = entries.filter((e) => e.kind === "tap");
-      const picked = taps.length ? pick(taps) : [];
-      if (picked.length) playFile(picked[0].file, false);
+
+      // 点一下：Q 弹 + 用预载好的那段（全量池子里随机抽的）
+      squash(1.1, 0.9);
+      const next = takeNext();
+      if (next) run(next);
       say(QUOTES[Math.floor(Math.random() * QUOTES.length)]);
     });
 
@@ -343,49 +311,81 @@
       else sleep();
     });
 
-    video.addEventListener("ended", () => {
-      if (sleeping) {
-        const loopClip = entries.find((e) => e.file === "sleep-loop.webm");
-        if (loopClip) playFile(loopClip.file, true);
-        return;
-      }
-      idle();
-    });
+    const fling = () => {
+      window.cancelAnimationFrame(raf);
+      let last = 0;
+      let lastImpact = 0;
+      const gravity = 0.0026;
+      const bounce = 0.58;
+      const friction = 0.994;
 
-    closeButton.addEventListener("click", (event) => {
-      event.stopPropagation();
-      root.hidden = true;
-      restore.hidden = false;
-      hidden = true;
-      localStorage.setItem(STORE_HIDDEN, "1");
-      window.clearTimeout(idleTimer);
-      window.clearTimeout(bubbleTimer);
-      bubble.hidden = true;
-    });
+      const step = (ts: number) => {
+        const dt = last ? Math.min(34, ts - last) : 16;
+        last = ts;
+        x += vx * dt;
+        y += vy * dt;
+        vy += gravity * dt;
 
-    restore.addEventListener("click", () => {
-      root.hidden = false;
-      restore.hidden = true;
-      hidden = false;
-      localStorage.removeItem(STORE_HIDDEN);
-      idle();
-      scheduleIdleAction();
+        if (x < 8 || x > maxX()) {
+          x = x < 8 ? 8 : maxX();
+          vx = -vx * bounce;
+          if (Math.abs(vx) > 0.3 && ts - lastImpact > 120) {
+            squash(1.08, 0.92);
+            lastImpact = ts;
+          }
+        }
+        if (y < 8) {
+          y = 8;
+          vy = -vy * bounce;
+        } else if (y > maxY()) {
+          y = maxY();
+          vy = -vy * bounce * 0.85;
+          vx *= 0.92;
+          // 落地只在速度够大时压一下，每帧都压会看起来抖
+          if (Math.abs(vy) > 0.35 && ts - lastImpact > 120) {
+            squash(1.14, 0.86);
+            lastImpact = ts;
+          }
+        }
+
+        vx *= friction;
+        vy *= friction;
+        apply();
+
+        if (Math.abs(vx) < 0.02 && Math.abs(vy) < 0.02 && y >= maxY() - 1.5) {
+          vx = 0;
+          vy = 0;
+          persist();
+          return;
+        }
+        raf = window.requestAnimationFrame(step);
+      };
+      raf = window.requestAnimationFrame(step);
+    };
+
+    videos.forEach((el) => {
+      el.addEventListener("ended", () => {
+        if (sleeping) {
+          const loopClip = entries.find((e) => e.file === "sleep-loop.webm");
+          if (loopClip) run(loopClip, true);
+          return;
+        }
+        idle();
+      });
     });
 
     window.addEventListener("resize", () => {
-      x = clampXBase(x);
-      y = clampYBase(y);
+      x = clamp(x, maxX());
+      y = clamp(y, maxY());
       apply();
     });
 
     const start = async () => {
       if (!supportsAlpha) {
-        root.remove();
-        restore.remove();
+        petRoot.remove();
         return;
       }
 
-      // 恢复上次位置
       const saved = localStorage.getItem(STORE_POS);
       if (saved) {
         try {
@@ -396,26 +396,24 @@
           localStorage.removeItem(STORE_POS);
         }
       } else {
-        const rect = root.getBoundingClientRect();
+        const rect = petRoot.getBoundingClientRect();
         x = rect.left;
         y = rect.top;
       }
       apply();
 
-      if (localStorage.getItem(STORE_HIDDEN)) {
-        root.hidden = true;
-        restore.hidden = false;
-        hidden = true;
-        return;
-      }
-
-      idle();
+      load(videos[0], IDLE);
+      videos[0].loop = true;
+      videos[0].style.opacity = "1";
+      active = 0;
+      void videos[0].play().catch(() => {});
 
       try {
         entries = await (await fetch(MANIFEST, { cache: "force-cache" })).json();
       } catch {
         entries = [];
       }
+      void prepareNext();
       scheduleIdleAction();
     };
 
