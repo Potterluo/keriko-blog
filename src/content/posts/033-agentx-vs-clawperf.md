@@ -1,13 +1,13 @@
 ---
-title: "AgentX 是怎样把真实会话变成负载的"
-description: "拆开 agentx-harness 1.0.7 的 scenario 锁与 WEKA trace 格式，看 AgentX 四步构建与回放语义；再对照 ClawPerf 的 agent 模式，比较回放 trace 与真跑 agent 各自能回答什么问题。"
+title: "同一份会话，三种搬法：AgentX 与 ClawPerf 的回放族"
+description: "AgentX 用锁死的 scenario 加官方语料换可横比，ClawPerf 的 trace 用块哈希换缓存预算的答案，replay 用 live 历史换前缀保真。拆开四步构建与时间语义，再看这几种实现各自把成本付在哪。"
 publishedAt: "2026-11-02"
 category: 技术分享
 tags:
   - Agent
   - Benchmark
   - Trace 回放
-  - 推理性能
+  - KV Cache
   - TCO
 draft: false
 featured: true
@@ -23,7 +23,7 @@ $$\mathrm{USD/MTok} = \mathrm{USD}/(\mathrm{GPU{\cdot}h}) \times 10^{6} / (3600 
 
 分子是钱，摊得出来。分母是 token 速率，它的可信度完全取决于压测时喂的是什么流量。同一张卡，用 4k 输入的合成短请求压出来的 tok/s，和用 142k 输入、九成命中缓存的 agent 会话压出来的，不是一个数。
 
-于是我去看他们公开的基准 InferenceX 里测 agent 负载的那一项 AgentX，又把手边 ClawPerf 的 agent 模式翻出来对照。想弄清的是：这两边测的是同一件事，还是各测各的。
+分母有几种拿法：自己造、录一段真的、拿别人的 trace、或者干脆让模型真跑一遍。AgentX 挑的是第三条，而且把参数锁死到接近没有回旋余地。ClawPerf 把这几条路各做了一个模式。两边摊开看，能看清每条路要付的代价。
 
 ## 二、材料与口径
 
@@ -32,17 +32,17 @@ $$\mathrm{USD/MTok} = \mathrm{USD}/(\mathrm{GPU{\cdot}h}) \times 10^{6} / (3600 
 - `agentx-harness==1.0.7` 的 wheel，解包后看 scenario 定义、validator、WEKA trace 的 schema、会话重建、cache-bust 标记与 warmup 逻辑
 - AgentX 官方两页：Overview 与 Methodology，链接在文末
 - SemiAnalysis 的 AI Cloud & TCO 模型页面里 method 那一节
-- ClawPerf 0.5.0 的源码：`agent.py`、`agent_tasks.py`，以及仓库里几次实跑留下的 `results_agent.md`、`results_e2e/agent.md`
+- ClawPerf 0.5.0：七个模式的文档（`docs/modes/`）、`agent.py`、`player.py`、`recorder.py`、`trace_simulator.py`，以及仓库里落盘的 `results_*.md`
 - 我在 GPT-Zero 里用真 harness 加真语料跑过的离线记录
 
 没做的，先说清楚：
 
-- 没跑 393 条全量语料，只用了前 8 条（理由在第十节）
+- 没跑 393 条全量语料，只用了前 8 条（理由在第十一节）
 - 没做官方 submission，时长和硬件都不合规
-- ClawPerf 的 agent 模式我没有在本机重跑，引用的是仓库里已落盘的几次报告
+- ClawPerf 的模式我没在本机重跑，读的是源码与文档，数字取自它仓库里的报告
 - TCO 模型本体是付费产品，我只读了公开页面对方法的描述，上面那个公式是按定义自己推的
 
-## 三、AgentX 干的事，四步
+## 三、AgentX 的四步
 
 ![图 1 AgentX 把生产会话变成负载的四步：左边采集，右边回放，中间两步做脱敏与重建，每一步丢掉什么、留下什么都写在框里](/img/033-agentx-vs-clawperf/fig-01.svg)
 
@@ -58,11 +58,11 @@ v1.0 语料的形状：393 条会话，135,282 个请求，每个请求中位 14
 
 要理解这套设计，得先问一句：为什么不直接自己造 142k 的长 prompt。
 
-因为长度好造，前缀复用不好造。官方那组示例会话里，20 个请求的缓存命中是 92.6%；方法论也写明测量窗口内 HBM 缓存命中占主导。这个比例是同一份 system prompt、工具定义和不断增长的历史被反复携带的结果。合成 token 保留了「哪些块被重复带上」这个结构，服务端算最长公共前缀时就会自然命中，命中率因此是被负载形状决定的，不是被脚本调出来的。
+因为长度好造，前缀复用不好造。官方那组示例会话里，20 个请求的缓存命中是 92.6%；方法论也写明测量窗口内 HBM 缓存命中占主导。这个比例来自同一份 system prompt、工具定义和不断增长的历史被反复携带。合成 token 保留了「哪些块被重复带上」这个结构，服务端算最长公共前缀时就会自然命中，命中率因此是被负载形状决定的，不是被脚本调出来的。
 
 官方给的保真度证据是：重建后的 token 数与原始 token 数的中位比值 1.004。
 
-## 四、scenario 锁：把测量强度写成硬约束
+## 四、它把测量强度锁成了硬约束
 
 `agentx` 这个命令本身只是一层包装。wheel 里的 `agentx_cli.py` 全文 1900 字节，实质动作只有一处：
 
@@ -100,7 +100,7 @@ def main(argv=None):
 
 这份清单值得逐条读，因为每一条都对应一次「数字看起来没问题、其实不可比」的事故。
 
-## 五、回放时的时间、并发与预热
+## 五、回放里的时间、并发与预热
 
 时间戳 `t` 的单位是秒。wheel 里 schema 的注释是 `Request timestamp in seconds`，loader 内部再乘 1000 转成毫秒。看文档时很容易被「毫秒」带偏。
 
@@ -126,25 +126,59 @@ DRAM 卸载是第二处。KV 卸载直接改变长会话能用的容量，不设
 
 第三处是质量。官方原话是合成载荷不支持模型质量评估，这一项直接放弃。
 
-代价写在明处：能复现的是长度、时序、分支结构和 KV 前缀复用，不能复现的是厂商侧 chat template、私有 tokenizer、加密的推理内容，以及图片和文档的 token 展开方式。这决定了它只能拿来比服务系统，不能拿来比模型。
+代价写在明处：能复现的是长度、时序、分支结构和 KV 前缀复用，不能复现的是厂商侧 chat template、私有 tokenizer、加密的推理内容，以及图片和文档的 token 展开方式。
 
-## 七、ClawPerf 的 agent 模式：让模型真的干活
+## 七、ClawPerf 的七个模式落在哪一格
 
-ClawPerf 的 agent 模式不预置请求序列，它把四个文件工具交给模型，让模型自己决定读哪个文件、改哪一行、跑哪条命令。
+![图 3 七个模式按负载来源分成四格，再按要不要真打端点分成两条出口；官方语料那一格只有 AgentX，它比同族多三道核验](/img/033-agentx-vs-clawperf/fig-03.svg)
 
-![图 3 ClawPerf agent 模式的工具循环：从上面领任务进去，只有「这一轮没有 tool_calls」能走到右边出口](/img/033-agentx-vs-clawperf/fig-03.svg)
+七个模式分成四种负载来源，通向两条出口。
 
-一轮的流程是：
+录自己的这一对最直白。`record` 是一个 FastAPI 代理，同时接受 OpenAI 和 Anthropic 两种客户端，后者实时翻译成前者，每个往返的请求体、流式分片、耗时和 usage 都写进 JSONL，写文件时跨重启追加。`replay` 再把这份 JSONL 打到任意端点。它有 `--history-mode` 两档：`live` 只抽客户端新增的消息，assistant 轮用服务端真实返回，这样即使换了模型，前缀也和当时一致；`verbatim` 原样重发录制的字节，适合两台服务端做严格 A/B。
 
-1. 领一个任务，任务带一句 prompt 和一份预置工作区，每个任务实例物化到独立目录，并发任务之间不共享文件
-2. 组装 messages，system、任务、历史、工具结果，每轮都重新带上工具的函数声明
-3. 流式请求，解 SSE，累积 content 与 tool_calls 的参数分片，记 TTFT 和 usage
-4. 这一轮有 tool_calls 就执行，结果截到 4000 字符，以 `role=tool` 回填，回到第 2 步
-5. 没有 tool_calls 就判定任务完成，步数到上限则截断
+拿别人的这一对是 `trace` 和 `trace-convert`。`trace` 吃的是 kvcache.ai 格式的 JSONL，字段是 `hash_ids`、`input_length`、可选 `block_size`，先把块哈希喂进本地模拟缓存算可达复用率，这一步不需要端点；给了端点再把请求真打过去。仓库里那次跑出 34 个请求、命中 90.42%、理想 prefill 加速 10.44 倍。`trace-convert` 负责把 Claude Code 会话、ShareGPT、OpenAI messages 转成可回放的 trace，所以「别人的」这个词可以很宽。
 
-工具就四个：`list_files`、`read_file`、`write_file`、`run_shell`。路径做了逃逸检查，shell 有超时，默认 30 秒。预置任务四个：修一个把加法写成减法的函数、新建一个 `stats.py`、改一个键名拼错的配置、往 README 追加一段。也可以用自己的 JSONL 换掉。
+自己造那一格里是 `scenario`、`hitrate`、`slo`。`scenario` 让 N 个用户各自维护一条独立增长的对话，系统前缀、用户前缀、历史、当前输入四段拼起来，撞到窗口上限做追加式压缩；`hitrate` 构造 `[共享前缀][边界][唯一后缀]` 去标定命中率；`slo` 用几何爬坡加二分找满足约束的最大并发。
 
-每一轮都单独记 TTFT、E2E、输入输出 token、工具耗时；模型吐 `reasoning_content` 或 `reasoning` 时，思考 token 按字符数除以 4 单独记一笔。
+`agent` 不在这一族里，它的负载由模型当场生成。
+
+有个细节值得单独说：块哈希这个表示已经成了共识。AgentX 的 WEKA trace 用 `hash_ids` 加 `block_size`，ClawPerf 的 trace 用 `hash_ids` 加 `input_length` 加 `block_size`，两边都把「同一段前缀」表达成「同一串块 ID」。这是唯一能同时保住前缀结构和内容保密的写法。
+
+## 八、同一份负载，三种搬法
+
+|            | AgentX        | trace      | replay         |
+| :--------- | :------------ | :--------- | :------------- |
+| 负载来源   | 官方语料      | trace 文件 | 自己的录制     |
+| 语料身份   | 要核验        | 不校验     | 不校验         |
+| 前缀怎么保 | 块哈希重建    | 块哈希模拟 | 真实返回当历史 |
+| 时间轴     | 按 t 严格回放 | 会话级并发 | 录制顺序       |
+| 独有能力   | 出 submission | 扫缓存预算 | 字节级 A/B     |
+
+语料身份只在 AgentX 这边是硬约束。本地目录一律被判「无法核验身份」，要 valid 就必须用 pinned 的公开别名。这一条换来的是可复核的 submission，代价是它永远测不了你自己的流量，你的会话不在那 393 条里。
+
+前缀怎么保，三家的做法完全不同。AgentX 用合成 token 按块重建，前缀由 hash 块决定；`trace` 把块哈希喂进模拟缓存，压根不构造 prompt，所以它第一步根本不打请求；`replay` 的 `live` 模式只保留客户端新增的部分，assistant 轮换成服务端的真实输出。最后这个在解决一个很具体的问题：录制文件里有旧模型自己的回答，原样发过去，换了个模型前缀就断了，KV 复用从第一轮起就不对。
+
+缓存怎么测也有分歧。AgentX 直接读服务端的 Prometheus counters；`trace` 先离线算出上界，再拿真回放的结果和这个上界对照，两者的差就是服务端没做到的；`replay` 和 `hitrate` 一样读 counters。
+
+时间轴是分水岭。AgentX 是唯一一个严格按 `t` 重放、还把子代理的 SPAWN/JOIN 建出来的，因为它要复现的是并发形状；`trace` 只做会话级并发，`--trace-users` 有几个用户就是几条会话；`replay` 按录制顺序加 `--concurrency`。
+
+锁的形态最后决定了两者的定位。AgentX 把参数写成 validator 会改写的硬约束，整体是一个「不合规就不出数」的判定器；ClawPerf 把同类的东西留成开关：`--request-rate` 打开开环泊松到达，`--cache-budget-tokens/--cache-budget-gb` 扫缓存容量，`--eviction-policy` 选 LRU 还是 FIFO，`--history-mode` 选 live 还是 verbatim。前者的产物是一份能被别人复核的 submission，后者的产物是你自己机器上的一组诊断。
+
+## 九、另外两条路
+
+### 合成：不录也能跑
+
+`scenario` 模式不需要任何外部数据，改参数就能造出想要的形状。AgentX 明令禁止这条路，理由是语料身份不可核验。
+
+这个理由成立。合成语料可以调得刚好对某台机器友好，比如把前缀共享度拉高，命中率就好看。但它也意味着 AgentX 回答不了「我这份流量在这台机器上要多少钱」，因为你的流量不在它的语料里。
+
+### 真跑：让模型自己决定负载
+
+![图 4 ClawPerf agent 模式的工具循环：从上面领任务进去，只有「这一轮没有 tool_calls」能走到右边出口](/img/033-agentx-vs-clawperf/fig-04.svg)
+
+ClawPerf 的 `agent` 模式不预置请求序列，它把四个文件工具交给模型，让模型自己决定读哪个文件、改哪一行、跑哪条命令。一轮的流程是：领任务（一句 prompt 加一份预置工作区，每个任务实例物化到独立目录）→ 组装 messages 并带上工具声明 → 流式请求，记 TTFT 和 usage → 有 `tool_calls` 就执行，结果截到 4000 字符以 `role=tool` 回填 → 没有 `tool_calls` 就判定完成，步数到上限则截断。
+
+工具就四个：`list_files`、`read_file`、`write_file`、`run_shell`。路径做了逃逸检查，shell 超时默认 30 秒。每一轮都单独记 TTFT、E2E、输入输出 token、工具耗时；模型吐 `reasoning_content` 时，思考 token 按字符数除以 4 单独记一笔。
 
 仓库里落盘过两次实跑：
 
@@ -163,19 +197,11 @@ if not tr.tool_calls:
 
 这行代码便宜、可解释，代价是完成率这个指标会被模型的偷懒直接污染。判断一次 agent 跑得有没有意义，得同时看步数、输入 token 的增长率、以及出现过哪些工具调用。只报一个完成率，等于把「模型压根没动手」和「任务被干完了」写成了同一个数。
 
-## 八、两种口径各能回答什么
+这条路的负载是内生的：换一个模型，工具调用的次数、顺序、上下文增长速度全变。所以它不能横比，但能回答另一类问题，这套栈干完一件活要多少 token、多少秒。
 
-![图 4 五个维度上的对照：左边负载在测量前定死，右边负载由模型当场决定，最下面一行是两个工具各自的失效方式](/img/033-agentx-vs-clawperf/fig-04.svg)
+## 十、放回 TCO 的链条
 
-AgentX 的负载是外生的。测量开始之前，请求长度、到达顺序、前缀复用和并发结构全部定死，换一张卡、换一套推理栈，跑的仍然是同一份负载。这让数字可以横着比，前提是语料合规、参数锁住、时长跑满；代价是它回答不了「这套栈能不能把活干完」。
-
-ClawPerf 的负载是内生的。换一个模型，工具调用的次数、顺序、上下文增长速度全变，横比就失去了意义。它回答的是另一类问题：这套栈端到端能不能干活，干完一件要多少 token、多少秒。
-
-两者都不测质量。质量是第三个问题，得交给 SWE-bench、τ-bench 这类东西。
-
-## 九、放回 TCO 的链条
-
-回到开头那个公式。分母必须从真实负载形状里来，否则每百万 token 的钱会被低估：用 4k 输入的合成短请求压测，142k 的 prefill 和九成命中都不在，tok/s 被高估，代进公式后成本被压低。trace 回放这类做法解决的正是分母。
+回到开头那个公式。分母必须从真实负载形状里来，否则每百万 token 的钱会被低估：用 4k 输入的合成短请求压测，142k 的 prefill 和九成命中都不在，tok/s 被高估，代进公式后成本被压低。第七节那四条路都在补这个分母，区别只在补得准不准、能不能被别人复核。
 
 举个算例，假设每 GPU 小时 2 美元，实测输出 2500 tok/s：
 
@@ -183,9 +209,9 @@ $$2 \times 10^{6} / (3600 \times 2500) \approx 0.222$$
 
 也就是每百万输出 token 约 0.22 美元。这个数跟任何厂商报价无关，只是把公式跑一遍看量级。
 
-ClawPerf 的 agent 模式补的是另一半。一个任务要花多少步、多少输入 token、多少工具等待，这些决定一次 agent 会话的成本。分母告诉你机器的速度，分子告诉你工作的量，两个乘起来才是单次会话的钱。
+`agent` 模式补的是另一半。一个任务要花多少步、多少输入 token、多少工具等待，这些决定一次 agent 会话的成本。分母告诉你机器的速度，分子告诉你工作的量。
 
-## 十、我实际跑通的那一段
+## 十一、我实际跑通的那一段
 
 链路能不能在离线环境里跑起来，是另一件事。我拿 GPT-Zero 的 mock 服务和官方的真 harness 试了一遍。
 
@@ -207,7 +233,7 @@ $env:HF_HOME="D:\Vibe_Workspace\GPT-Zero\data\hf"; $env:HF_HUB_OFFLINE="1"
   --output-artifact-dir experiments\agentx_real\run_c4_180
 ```
 
-几处设置是有理由的。只用 8 条，是因为 393 条全量重建时 AIPerf 会并行重建所有会话，16 个 worker 能把 31GB 内存的机器打到 free 归零。本地把时长从官方的 900 秒压到 180 秒，图的是缩短冒烟时间，这一条和「语料非 pinned」一起被 `--unsafe-override` 降级成警告。mock 侧还补了两个兼容点：AIPerf 发的是 `max_completion_tokens`，老 mock 只认 `max_tokens`；另外 AgentX 要看 `usage.prompt_tokens_details.cached_tokens`，不给就会警告「no prompt-cache read tokens were seen」。
+几处设置是有理由的。只用 8 条，是因为 393 条全量重建时 AIPerf 会并行重建所有会话，16 个 worker 能把 31GB 内存的机器打到 free 归零。本地把时长从官方的 900 秒压到 180 秒，图的是缩短冒烟时间，这一条受到了 `--unsafe-override` 的降级。mock 侧还补了两个兼容点：AIPerf 发的是 `max_completion_tokens`，老 mock 只认 `max_tokens`；另外 AgentX 要看 `usage.prompt_tokens_details.cached_tokens`，不给就会警告「no prompt-cache read tokens were seen」。
 
 结果：
 
@@ -224,15 +250,21 @@ $env:HF_HOME="D:\Vibe_Workspace\GPT-Zero\data\hf"; $env:HF_HUB_OFFLINE="1"
 
 有一个坑得记下来：Windows 上 AIPerf 的结果总线偶发收不到记录，日志停在 `currently 0 of N records processed`，`profile_export.jsonl` 是 0 字节，而 mock 侧一切正常。c=4 这次完整跑通，c=1、2、8 的几次尝试里有卡在这里的，换成 Linux 没有这个问题。所以这条链路只交付了一个并发点，并发曲线是用自研的回放器补的，两边的数据没有混在一张表里。
 
-## 十一、判断
+这一段跑通的意义在于确认一件事：官方那层锁在离线环境里是可以复现的，锁本身不影响链路能不能起，只影响出来的数算不算数。
 
-要横比硬件或推理栈，用 trace 回放这条路。前提是语料可核验、参数锁住、时长跑满，否则产出的数字只能内部看。
+## 十二、判断
 
-要回答「这套栈能不能干活、干一件活多少钱」，只能让模型真跑。完成率之外，步数和 token 增长曲线要一起报，否则模型不调工具也能拿 100%。
+要出可横比的数，只有 AgentX 那种锁法，前提是你的负载落在它的语料名单里。超过这个前提，它剩下的作用是提供一个参照点：同一台机器在 AgentX 那份负载上是多少，用来校准你自己那套合成负载偏乐观还是偏保守。
 
-两条路可以接起来。ClawPerf 的 record 模式本身就是一个代理，把真实会话录成 JSONL 再回放，思路和 AgentX 的采集、变换是同一个，只是没有脱敏和合成重建。录一次真跑，把步数与 token 分布固化成 trace，再拿 trace 去横比硬件，是可行的一条线。
+要回答「缓存该给多大」，用 `trace` 模式。它不需要端点，扫一遍预算就能出命中率曲线，几十秒的事，比真压测便宜两个数量级。
 
-两边的数字不要放进同一张表。它们的分母连定义都不一样。
+要回答「同一份输入换到另一台机器差多少」，用 `replay` 的 `verbatim`，字节级对齐，结论最干净。
+
+要回答「这套栈能不能干活」，只能让模型真跑。完成率之外，步数和 token 增长曲线要一起报。
+
+几条路可以接起来，接口上是通的：拿 `record` 录一段自己的会话，或者用 `trace-convert` 把别人的数据集转成 trace，再交给 `trace` 模式回放。这一步我只看了代码和文档，没实际走完，所以不把它当成结论。
+
+唯一不能做的是把不同路的数字放进同一张表。它们的分母连定义都不一样。
 
 参考：
 
