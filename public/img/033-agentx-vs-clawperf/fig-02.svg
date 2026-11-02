@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 560" width="1000" height="560" role="img" aria-label="一条会话在 AgentX 里的重放时间线">
+  <defs>
+    <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#F43F5E"/>
+    </marker>
+    <marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+    <marker id="b3" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M10,0 L0,5 L10,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="560" fill="#F8FAFC"/>
+  <g font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+    <text x="40" y="40" font-size="15" font-weight="600" fill="#0F172A">一条会话重放出来，是一条主链加若干条并行子链</text>
+    <text x="40" y="64" font-size="11.5" fill="#64748B">横轴是会话自己的时间轴，不是墙钟；纵轴是三条并发的请求流</text>
+
+    <rect x="80" y="100" width="240" height="32" rx="6" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="92" y="121" font-size="11" fill="#0369A1">预热：primer + 10 条/lane</text>
+    <rect x="320" y="100" width="630" height="32" rx="6" fill="#ECFDF5" stroke="#6EE7B7"/>
+    <text x="332" y="121" font-size="11" fill="#047857">profiling 窗口 1 小时，只有这段计入报告</text>
+    <line x1="320" y1="132" x2="320" y2="440" stroke="#10B981" stroke-width="1.2" stroke-dasharray="5 4"/>
+    <text x="330" y="152" font-size="10.5" fill="#10B981">warmup 结束，测量开始</text>
+
+    <line x1="80" y1="210" x2="950" y2="210" stroke="#E2E8F0"/>
+    <line x1="80" y1="330" x2="950" y2="330" stroke="#E2E8F0"/>
+    <line x1="80" y1="410" x2="950" y2="410" stroke="#E2E8F0"/>
+    <text x="34" y="214" font-size="11" fill="#4338CA">主链</text>
+    <text x="34" y="334" font-size="11" fill="#0369A1">子代理 A</text>
+    <text x="34" y="414" font-size="11" fill="#0369A1">子代理 B</text>
+
+    <text x="86" y="188" font-size="10.5" fill="#475569">t*：会话走到 25%~75% 处才开跑</text>
+
+    <circle cx="120" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="210" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="300" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="480" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="570" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="660" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="760" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="860" cy="210" r="7" fill="#6366F1"/>
+    <circle cx="930" cy="210" r="7" fill="#6366F1"/>
+
+    <line x1="216" y1="243" x2="292" y2="243" stroke="#64748B" stroke-width="1.1" marker-start="url(#b3)" marker-end="url(#b2)"/>
+    <line x1="294" y1="242" x2="352" y2="236" stroke="#CBD5E1" stroke-width="1" stroke-dasharray="3 3"/>
+    <text x="360" y="233" font-size="10.5" fill="#64748B">空闲间隔按 end-to-start 折算，不是按上一次的起点</text>
+
+    <path d="M303,218 L344,322" stroke="#F43F5E" stroke-width="1.2" fill="none" marker-end="url(#b1)"/>
+    <path d="M297,218 L344,402" stroke="#F43F5E" stroke-width="1.2" fill="none" marker-end="url(#b1)"/>
+    <text x="360" y="276" font-size="10.5" fill="#BE123C">同一条主请求之后扇出两条子链</text>
+
+    <circle cx="350" cy="330" r="6" fill="#0284C7"/>
+    <circle cx="420" cy="330" r="6" fill="#0284C7"/>
+    <circle cx="460" cy="330" r="6" fill="#0284C7"/>
+    <circle cx="350" cy="410" r="6" fill="#0284C7"/>
+    <circle cx="410" cy="410" r="6" fill="#0284C7"/>
+    <circle cx="450" cy="410" r="6" fill="#0284C7"/>
+
+    <line x1="470" y1="205" x2="470" y2="420" stroke="#F43F5E" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <line x1="464" y1="205" x2="476" y2="205" stroke="#F43F5E" stroke-width="1.2"/>
+    <line x1="464" y1="420" x2="476" y2="420" stroke="#F43F5E" stroke-width="1.2"/>
+    <text x="482" y="360" font-size="10.5" fill="#BE123C">汇合门控：父链这一条</text>
+    <text x="482" y="376" font-size="10.5" fill="#BE123C">要等最晚结束的子链</text>
+
+    <rect x="30" y="466" width="940" height="60" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="48" y="488" font-size="11" fill="#334155">并发 N 指 N 个并发 agent 客户端，不是 N 个并发 HTTP 请求：一个客户端扇出子代理后，服务端在飞请求数会超过 N</text>
+    <text x="48" y="510" font-size="10" fill="#94A3B8">重放保留的是顺序、分支重叠与轮次间隔，工具层到底发生了什么，trace 里没有，也不假装有</text>
+  </g>
+</svg>

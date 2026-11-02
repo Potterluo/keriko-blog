@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520" role="img" aria-label="trace 回放与真跑 agent 的五个对比维度">
+  <rect width="1000" height="520" fill="#F8FAFC"/>
+  <g font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+    <text x="40" y="40" font-size="15" font-weight="600" fill="#0F172A">同样是测 agent 负载，负载由谁决定，决定了一切</text>
+    <text x="40" y="64" font-size="11.5" fill="#64748B">左边负载外生，测之前就定死；右边负载内生，模型每跑一次都不一样</text>
+
+    <rect x="180" y="86" width="390" height="52" rx="8" fill="#EEF2FF" stroke="#C7D2FE"/>
+    <text x="198" y="108" font-size="12.5" font-weight="600" fill="#4338CA">trace 回放（AgentX）</text>
+    <text x="198" y="127" font-size="10.5" fill="#64748B">负载在测量之前就定死了</text>
+    <rect x="580" y="86" width="390" height="52" rx="8" fill="#E0F2FE" stroke="#BAE6FD"/>
+    <text x="598" y="108" font-size="12.5" font-weight="600" fill="#0369A1">真跑 agent（ClawPerf）</text>
+    <text x="598" y="127" font-size="10.5" fill="#64748B">负载由模型当场决定</text>
+
+    <text x="40" y="182" font-size="10.5" fill="#64748B">负载来源</text>
+    <rect x="180" y="152" width="390" height="48" rx="7" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="196" y="181" font-size="10.5" fill="#334155">393 条生产会话，长度、时序、分支全锁死</text>
+    <rect x="580" y="152" width="390" height="48" rx="7" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="596" y="181" font-size="10.5" fill="#334155">模型自己决定调不调工具、调几次、调哪个</text>
+
+    <text x="40" y="246" font-size="10.5" fill="#64748B">跑起来要什么</text>
+    <rect x="180" y="216" width="390" height="48" rx="7" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="196" y="245" font-size="10.5" fill="#334155">语料、合规参数，加任意一个能服务的端点</text>
+    <rect x="580" y="216" width="390" height="48" rx="7" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="596" y="245" font-size="10.5" fill="#334155">一个真会函数调用、还真把活干完的模型</text>
+
+    <text x="40" y="310" font-size="10.5" fill="#64748B">能不能横比</text>
+    <rect x="180" y="280" width="390" height="48" rx="7" fill="#F5F3FF" stroke="#DDD6FE"/>
+    <text x="196" y="309" font-size="10.5" fill="#5B21B6">能比：请求形状不变，换的只是服务端</text>
+    <rect x="580" y="280" width="390" height="48" rx="7" fill="#FFF7ED" stroke="#FED7AA"/>
+    <text x="596" y="309" font-size="10.5" fill="#9A3412">不能比：换模型等于换负载，数字对不上</text>
+
+    <text x="40" y="374" font-size="10.5" fill="#64748B">主要看什么</text>
+    <rect x="180" y="344" width="390" height="48" rx="7" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="196" y="373" font-size="10.5" fill="#334155">吞吐、TTFT 分位、交互性，三个一起报</text>
+    <rect x="580" y="344" width="390" height="48" rx="7" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="596" y="373" font-size="10.5" fill="#334155">完成率、步数、任务 token、每步 TTFT</text>
+
+    <text x="40" y="438" font-size="10.5" fill="#64748B">怎么坏掉</text>
+    <rect x="180" y="408" width="390" height="48" rx="7" fill="#FFF1F2" stroke="#FDA4AF"/>
+    <text x="196" y="437" font-size="10.5" fill="#9F1239">时长、语料、失败率不合规，整轮标 invalid</text>
+    <rect x="580" y="408" width="390" height="48" rx="7" fill="#FFF1F2" stroke="#FDA4AF"/>
+    <text x="596" y="437" font-size="10.5" fill="#9F1239">模型不肯动手，一步「完成」也算 100%</text>
+
+    <rect x="30" y="472" width="940" height="36" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="48" y="495" font-size="11" fill="#334155">两个问题不重叠：一个问这台机器每秒能产多少 token，一个问这套栈干完一件活要多少 token 和多少秒</text>
+  </g>
+</svg>
