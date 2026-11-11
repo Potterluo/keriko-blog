@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 490" width="1000" height="490" role="img" aria-label="clean 配对由 deploy runner 声明">
+  <defs>
+    <marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+    <marker id="f2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="490" fill="#F8FAFC"/>
+  <g font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+    <text x="40" y="40" font-size="15" font-weight="600" fill="#0F172A">clean 配不配对，看 deploy runner 自己怎么写</text>
+    <text x="40" y="64" font-size="11.5" fill="#64748B">平台只读 runner.yaml 里的 clean_runner 一行，不认名字、不猜规则；同一条管道对比两种声明</text>
+
+    <text x="40" y="98" font-size="12" font-weight="600" fill="#4338CA">声明了 clean_runner</text>
+
+    <rect x="40" y="110" width="300" height="96" rx="8" fill="#FFFFFF" stroke="#A5B4FC"/>
+    <text x="56" y="132" font-size="10.5" fill="#64748B">runners/genet-deploy/runner.yaml</text>
+    <text x="56" y="156" font-size="11" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">name: genet-deploy</text>
+    <text x="56" y="174" font-size="11" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">role: deploy</text>
+    <rect x="50" y="182" width="230" height="18" rx="3" fill="#EEF2FF"/>
+    <text x="56" y="196" font-size="11" font-weight="600" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#4338CA">clean_runner: genet-clean</text>
+
+    <path d="M345,156 L429,156" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f2a)"/>
+    <text x="387" y="148" text-anchor="middle" font-size="10" fill="#64748B">声明配对</text>
+
+    <rect x="440" y="132" width="118" height="48" rx="8" fill="#EEF2FF" stroke="#A5B4FC"/>
+    <text x="499" y="153" text-anchor="middle" font-size="11" font-weight="600" fill="#4338CA">genet-deploy</text>
+    <text x="499" y="169" text-anchor="middle" font-size="10" fill="#6366F1">role: deploy</text>
+
+    <path d="M563,156 L576,156" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f2a)"/>
+
+    <rect x="587" y="132" width="118" height="48" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="646" y="153" text-anchor="middle" font-size="11" font-weight="600" fill="#0369A1">endpoint-probe</text>
+    <text x="646" y="169" text-anchor="middle" font-size="10" fill="#0284C7">role: pre_check</text>
+
+    <path d="M710,156 L723,156" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f2a)"/>
+
+    <rect x="734" y="132" width="108" height="48" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="788" y="153" text-anchor="middle" font-size="11" font-weight="600" fill="#0369A1">aisbench-acc</text>
+    <text x="788" y="169" text-anchor="middle" font-size="10" fill="#0284C7">role: test</text>
+
+    <path d="M847,156 L860,156" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f2a)"/>
+
+    <rect x="871" y="132" width="89" height="48" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+    <text x="915" y="153" text-anchor="middle" font-size="11" font-weight="600" fill="#047857">genet-clean</text>
+    <text x="915" y="169" text-anchor="middle" font-size="10" fill="#10B981">finally</text>
+
+    <text x="915" y="198" text-anchor="middle" font-size="10" fill="#047857">按声明追加</text>
+
+    <text x="40" y="242" font-size="12" font-weight="600" fill="#475569">没声明 clean_runner</text>
+
+    <rect x="40" y="254" width="300" height="96" rx="8" fill="#FFFFFF" stroke="#CBD5E1" stroke-dasharray="6 4"/>
+    <text x="56" y="276" font-size="10.5" fill="#64748B">runners/existing-deploy/runner.yaml</text>
+    <text x="56" y="300" font-size="11" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">name: existing-deploy</text>
+    <text x="56" y="318" font-size="11" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">role: deploy</text>
+    <text x="56" y="340" font-size="10.5" fill="#94A3B8">（没有这一行）</text>
+
+    <path d="M345,300 L429,300" stroke="#94A3B8" stroke-width="1.2" stroke-dasharray="5 4" fill="none" marker-end="url(#f2b)"/>
+    <text x="387" y="292" text-anchor="middle" font-size="10" fill="#94A3B8">无配对</text>
+
+    <rect x="440" y="276" width="118" height="48" rx="8" fill="#F1F5F9" stroke="#CBD5E1"/>
+    <text x="499" y="297" text-anchor="middle" font-size="10.5" font-weight="600" fill="#475569">existing-deploy</text>
+    <text x="499" y="313" text-anchor="middle" font-size="10" fill="#64748B">role: deploy</text>
+
+    <path d="M563,300 L576,300" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f2a)"/>
+
+    <rect x="587" y="276" width="118" height="48" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="646" y="297" text-anchor="middle" font-size="11" font-weight="600" fill="#0369A1">endpoint-probe</text>
+    <text x="646" y="313" text-anchor="middle" font-size="10" fill="#0284C7">role: pre_check</text>
+
+    <path d="M710,300 L723,300" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f2a)"/>
+
+    <rect x="734" y="276" width="108" height="48" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="788" y="297" text-anchor="middle" font-size="11" font-weight="600" fill="#0369A1">aisbench-acc</text>
+    <text x="788" y="313" text-anchor="middle" font-size="10" fill="#0284C7">role: test</text>
+
+    <rect x="871" y="276" width="89" height="48" rx="8" fill="none" stroke="#CBD5E1" stroke-dasharray="5 4"/>
+    <text x="915" y="305" text-anchor="middle" font-size="10" fill="#94A3B8">不注入</text>
+
+    <rect x="40" y="376" width="920" height="74" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="56" y="400" font-size="10.5" fill="#334155">assemble 的判据只有一行：clean_runner 非空，就按 seq=last+1 追加一行 clean，finally 执行。提交体里没有 clean 这个字段。</text>
+    <text x="56" y="422" font-size="10" fill="#64748B">clean_runner 指向的名字不在注册表，或者角色不是 role=clean，整批拒绝启动：与其跑到一半发现拆不掉，不如一开始就不让提交。</text>
+  </g>
+</svg>

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 430" width="1000" height="430" role="img" aria-label="v1 与 v2 的管道对比">
+  <defs>
+    <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="430" fill="#F8FAFC"/>
+  <g font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+    <text x="40" y="40" font-size="15" font-weight="600" fill="#0F172A">四个位置没变，变的是谁被允许做决定</text>
+    <text x="40" y="64" font-size="11.5" fill="#64748B">v1 里首尾两段是平台阶段，v2 里四段都是 runner；区别在玫红那两格</text>
+
+    <text x="40" y="98" font-size="12.5" font-weight="600" fill="#475569">v1（TestPlane）：平台阶段和 runner 混在一条链上</text>
+
+    <rect x="40" y="112" width="200" height="56" rx="8" fill="#FFF1F2" stroke="#F43F5E"/>
+    <text x="140" y="136" text-anchor="middle" font-size="12.5" font-weight="600" fill="#9F1239">Deploy 阶段</text>
+    <text x="140" y="154" text-anchor="middle" font-size="10.5" fill="#BE123C">平台硬编码 · 调 Genet SDK</text>
+
+    <path d="M245,140 L269,140" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f1a)"/>
+
+    <rect x="280" y="112" width="200" height="56" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="380" y="136" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0369A1">Pre-Check Task</text>
+    <text x="380" y="154" text-anchor="middle" font-size="10.5" fill="#0284C7">走 Runner 契约</text>
+
+    <path d="M485,140 L509,140" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f1a)"/>
+
+    <rect x="520" y="112" width="200" height="56" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="620" y="136" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0369A1">测试 Task</text>
+    <text x="620" y="154" text-anchor="middle" font-size="10.5" fill="#0284C7">走 Runner 契约</text>
+
+    <path d="M725,140 L749,140" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f1a)"/>
+
+    <rect x="760" y="112" width="200" height="56" rx="8" fill="#FFF1F2" stroke="#F43F5E"/>
+    <text x="860" y="136" text-anchor="middle" font-size="12.5" font-weight="600" fill="#9F1239">Cleanup 阶段</text>
+    <text x="860" y="154" text-anchor="middle" font-size="10.5" fill="#BE123C">平台硬编码 · cleanup.policy</text>
+
+    <text x="40" y="204" font-size="12.5" font-weight="600" fill="#475569">v2（Argus）：四段都是 runner，平台只管排程</text>
+
+    <rect x="40" y="218" width="200" height="56" rx="8" fill="#EEF2FF" stroke="#A5B4FC"/>
+    <text x="140" y="242" text-anchor="middle" font-size="12.5" font-weight="600" fill="#4338CA">genet-deploy</text>
+    <text x="140" y="260" text-anchor="middle" font-size="10.5" fill="#6366F1">role: deploy · seq=1</text>
+
+    <path d="M245,246 L269,246" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f1a)"/>
+
+    <rect x="280" y="218" width="200" height="56" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="380" y="242" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0369A1">endpoint-probe</text>
+    <text x="380" y="260" text-anchor="middle" font-size="10.5" fill="#0284C7">role: pre_check</text>
+
+    <path d="M485,246 L509,246" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f1a)"/>
+
+    <rect x="520" y="218" width="200" height="56" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="620" y="242" text-anchor="middle" font-size="12.5" font-weight="600" fill="#0369A1">aisbench-acc</text>
+    <text x="620" y="260" text-anchor="middle" font-size="10.5" fill="#0284C7">role: test</text>
+
+    <path d="M725,246 L749,246" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f1a)"/>
+
+    <rect x="760" y="218" width="200" height="56" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+    <text x="860" y="242" text-anchor="middle" font-size="12.5" font-weight="600" fill="#047857">genet-clean</text>
+    <text x="860" y="260" text-anchor="middle" font-size="10.5" fill="#10B981">role: clean · finally</text>
+
+    <rect x="40" y="294" width="11" height="11" rx="2" fill="#FFF1F2" stroke="#F43F5E"/>
+    <text x="58" y="304" font-size="10.5" fill="#9F1239">平台特例：逻辑写在平台代码里，改一次要连带改平台</text>
+    <rect x="400" y="294" width="11" height="11" rx="2" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="418" y="304" font-size="10.5" fill="#0369A1">Runner 契约：平台只按 role 认出它、按序拉起</text>
+
+    <rect x="40" y="326" width="920" height="64" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="56" y="350" font-size="10.5" fill="#334155">平台里剩下两件事：按 role 认出 deploy runner，按它 runner.yaml 里的 clean_runner 决定要不要补 clean。</text>
+    <text x="56" y="372" font-size="10" fill="#64748B">v1 的 Deploy 阶段、cleanup.policy 字段、DEPLOY_FAILED 的 Genet 分支，三处在 v2 一起删掉了。</text>
+  </g>
+</svg>

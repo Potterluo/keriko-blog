@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 510" width="1000" height="510" role="img" aria-label="exports 的数据流与组合期校验">
+  <defs>
+    <marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748B"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="510" fill="#F8FAFC"/>
+  <g font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif">
+    <text x="40" y="40" font-size="15" font-weight="600" fill="#0F172A">runner 负责写，平台负责搬，谁都不用理解值是什么</text>
+    <text x="40" y="64" font-size="11.5" fill="#64748B">整条链上只有一个通道 exports.env；平台对它的动作全在词法一级，下排是提交期就该拒的情况</text>
+
+    <rect x="40" y="104" width="400" height="170" rx="8" fill="#ECFDF5" stroke="#6EE7B7"/>
+    <text x="56" y="130" font-size="11.5" font-weight="600" fill="#047857">genet-deploy 写出来的样子</text>
+    <text x="56" y="154" font-size="9.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#94A3B8"># $AG_OUTPUT_DIR/exports.env</text>
+    <text x="56" y="174" font-size="9.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">AG_SERVED_URL=http://arg-&lt;sha12&gt;-unified-cache-stack</text>
+    <text x="56" y="192" font-size="9.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">              .argus-svc.svc.cluster.local:18080</text>
+    <text x="56" y="212" font-size="9.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">AG_SERVED_MODEL_NAME=Qwen3-32B</text>
+    <text x="56" y="230" font-size="9.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">AG_MODEL_PATH=/models/Qwen3-32B</text>
+    <text x="56" y="250" font-size="9.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#334155">AG_DEPLOY_REF=argus-svc/arg-&lt;sha12&gt;</text>
+
+    <path d="M445,189 L469,189" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f3a)"/>
+
+    <rect x="480" y="104" width="220" height="170" rx="8" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <text x="496" y="130" font-size="11.5" font-weight="600" fill="#334155">平台：三件事，全是词法级</text>
+    <text x="496" y="158" font-size="10.5" fill="#334155">① 收割 exports.env</text>
+    <text x="496" y="174" font-size="10" fill="#64748B">退出码 0 才读，按行切 KV</text>
+    <text x="496" y="200" font-size="10.5" fill="#334155">② 落档到 attempt</text>
+    <text x="496" y="216" font-size="10" fill="#64748B">事后能还原这次注入了什么</text>
+    <text x="496" y="242" font-size="10.5" fill="#334155">③ 注入下游 env</text>
+    <text x="496" y="258" font-size="10" fill="#64748B">同名 key 在提交期就拒</text>
+
+    <path d="M705,189 L729,189" stroke="#64748B" stroke-width="1.2" fill="none" marker-end="url(#f3a)"/>
+
+    <rect x="740" y="104" width="220" height="170" rx="8" fill="#E0F2FE" stroke="#7DD3FC"/>
+    <text x="756" y="130" font-size="11.5" font-weight="600" fill="#0369A1">下游 runner 拿到的 env</text>
+    <text x="756" y="160" font-size="10.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#0369A1">AG_SERVED_URL</text>
+    <text x="756" y="180" font-size="10.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#0369A1">AG_SERVED_MODEL_NAME</text>
+    <text x="756" y="200" font-size="10.5" font-family="ui-monospace,'Cascadia Mono',monospace" fill="#0369A1">AG_MODEL_PATH</text>
+    <text x="756" y="230" font-size="10" fill="#0284C7">consumes 声明了才注入</text>
+
+    <text x="40" y="312" font-size="12" font-weight="600" fill="#334155">提交期就该拒掉的四种情况</text>
+
+    <rect x="40" y="326" width="215" height="56" rx="8" fill="#FFF1F2" stroke="#FDA4AF"/>
+    <text x="52" y="350" font-size="10.5" font-weight="600" fill="#9F1239">consumes 有 key，没有上游</text>
+    <text x="52" y="368" font-size="10" fill="#BE123C">deploy 没导出、也没静态值</text>
+
+    <rect x="275" y="326" width="215" height="56" rx="8" fill="#FFF1F2" stroke="#FDA4AF"/>
+    <text x="287" y="350" font-size="10.5" font-weight="600" fill="#9F1239">两个 runner 导出同名 key</text>
+    <text x="287" y="368" font-size="10" fill="#BE123C">同一 Task 内不许覆盖</text>
+
+    <rect x="510" y="326" width="215" height="56" rx="8" fill="#FFF1F2" stroke="#FDA4AF"/>
+    <text x="522" y="350" font-size="10.5" font-weight="600" fill="#9F1239">deploy 和 service 同时给</text>
+    <text x="522" y="368" font-size="10" fill="#BE123C">两者是 XOR，只能给一个</text>
+
+    <rect x="745" y="326" width="215" height="56" rx="8" fill="#FFF1F2" stroke="#FDA4AF"/>
+    <text x="757" y="350" font-size="10.5" font-weight="600" fill="#9F1239">凭据写进 exports</text>
+    <text x="757" y="368" font-size="10" fill="#BE123C">凭据只能走 secret 注入</text>
+
+    <rect x="40" y="402" width="920" height="68" rx="8" fill="#FFFFFF" stroke="#E2E8F0"/>
+    <text x="56" y="426" font-size="10.5" fill="#334155">平台能报的错只有形状：一行切不出 KEY=VALUE 就是 EXPORT_INVALID；值是一个 URL 还是一句话，它不管。</text>
+    <text x="56" y="448" font-size="10" fill="#64748B">所以 runner 换了实现、换了部署系统，只要还写这几行，下游一个字都不用改。</text>
+  </g>
+</svg>
