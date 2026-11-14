@@ -1,0 +1,66 @@
+<svg viewBox="0 0 1000 560" width="1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="命中判断需要的四类知识中三类属于引擎和 UCM，因此判断权应留在 UCM">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 L2,4 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif; }
+    .title { font-size: 15px; fill: #1e293b; }
+    .box { font-size: 12.5px; fill: #1e293b; font-weight: 600; }
+    .s { font-size: 10.5px; fill: #64748b; }
+    .own { font-size: 10.5px; font-weight: 600; }
+  </style>
+
+  <rect x="0" y="0" width="1000" height="560" fill="#F8FAFC"/>
+  <text x="500" y="34" text-anchor="middle" class="title">命中判断要四样知识，Router 一样都不该长期持有</text>
+
+  <!-- 四张知识卡 -->
+  <rect x="40" y="70" width="210" height="130" rx="10" fill="#DBEAFE" stroke="#3B82F6"/>
+  <text x="145" y="98" text-anchor="middle" class="box" fill="#1E40AF">Tokenizer</text>
+  <text x="145" y="120" text-anchor="middle" class="s">Prompt → Token IDs</text>
+  <text x="145" y="138" text-anchor="middle" class="s">特殊 Token、多模态</text>
+  <text x="145" y="172" text-anchor="middle" class="own" fill="#1E40AF">归属：推理引擎</text>
+
+  <rect x="280" y="70" width="210" height="130" rx="10" fill="#D1FAE5" stroke="#10B981"/>
+  <text x="385" y="98" text-anchor="middle" class="box" fill="#065F46">Block 规则</text>
+  <text x="385" y="120" text-anchor="middle" class="s">Block Size、前缀依赖</text>
+  <text x="385" y="138" text-anchor="middle" class="s">Hash 算法与版本</text>
+  <text x="385" y="172" text-anchor="middle" class="own" fill="#065F46">归属：UCM</text>
+
+  <rect x="520" y="70" width="210" height="130" rx="10" fill="#D1FAE5" stroke="#10B981"/>
+  <text x="625" y="98" text-anchor="middle" class="box" fill="#065F46">Namespace</text>
+  <text x="625" y="120" text-anchor="middle" class="s">模型名、部署方式</text>
+  <text x="625" y="138" text-anchor="middle" class="s">并行配置、路径规则</text>
+  <text x="625" y="172" text-anchor="middle" class="own" fill="#065F46">归属：UCM</text>
+
+  <rect x="760" y="70" width="200" height="130" rx="10" fill="#D1FAE5" stroke="#10B981"/>
+  <text x="860" y="98" text-anchor="middle" class="box" fill="#065F46">文件状态</text>
+  <text x="860" y="120" text-anchor="middle" class="s">共享 FS 哈希文件</text>
+  <text x="860" y="138" text-anchor="middle" class="s">MISS ≠ LOOKUP_ERROR</text>
+  <text x="860" y="172" text-anchor="middle" class="own" fill="#065F46">归属：UCM + 文件系统</text>
+
+  <!-- 箭头连成判断链 -->
+  <path d="M250,135 L268,135" stroke="#64748B" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <path d="M490,135 L508,135" stroke="#64748B" stroke-width="1.4" marker-end="url(#arrow)"/>
+  <path d="M730,135 L748,135" stroke="#64748B" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- 两条被否的路 -->
+  <rect x="140" y="250" width="320" height="120" rx="10" fill="#FFFFFF" stroke="#FDA4AF" stroke-dasharray="6,4"/>
+  <text x="300" y="278" text-anchor="middle" class="box" fill="#9F1239">路线一：Router 自做</text>
+  <text x="300" y="304" text-anchor="middle" class="s">加载 Tokenizer，复制 Hash 规则</text>
+  <text x="300" y="324" text-anchor="middle" class="s">UCM 改一处，Router 跟改一处</text>
+  <text x="300" y="348" text-anchor="middle" class="s" fill="#9F1239">结果：Router 长成第二个 Cache Manager</text>
+
+  <rect x="540" y="250" width="320" height="120" rx="10" fill="#FFFFFF" stroke="#FDA4AF" stroke-dasharray="6,4"/>
+  <text x="700" y="278" text-anchor="middle" class="box" fill="#9F1239">路线二：独立预取服务</text>
+  <text x="700" y="304" text-anchor="middle" class="s">新增 Lookup/Prefetch RPC</text>
+  <text x="700" y="324" text-anchor="middle" class="s">无 master 下再造中心化组件</text>
+  <text x="700" y="348" text-anchor="middle" class="s" fill="#9F1239">结果：与请求驱动的实现相冲突</text>
+
+  <!-- 最终结论 -->
+  <rect x="40" y="410" width="920" height="100" rx="10" fill="#ECFDF5" stroke="#10B981"/>
+  <text x="500" y="442" text-anchor="middle" class="box" fill="#065F46">v4 定稿：Router 只管选节点，命中判断和就绪等待全部留给 D 侧 UCM Connector</text>
+  <text x="500" y="470" text-anchor="middle" class="s">Router 尽早并提 P/D 请求；已有 KV 是否提升、是否等待未写入部分，由最了解 KV 的组件决定</text>
+  <text x="500" y="492" text-anchor="middle" class="s">未来若需要调度提示，由 UCM 暴露高层 Hint，Router 仍不持有 Tokenizer 和 Hash 细节</text>
+</svg>

@@ -1,0 +1,82 @@
+<svg viewBox="0 0 1000 700" width="1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="缓存查询后 Prefill 与预取分成两条并行支路，汇合后才允许 Decode">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 L2,4 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 L2,4 z" fill="#0284C7"/>
+    </marker>
+    <marker id="arrow-amber" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 L2,4 z" fill="#F59E0B"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif; }
+    .title { font-size: 15px; fill: #1e293b; }
+    .box { font-size: 12.5px; fill: #1e293b; font-weight: 600; }
+    .s { font-size: 10.5px; fill: #64748b; }
+    .grp { font-size: 11px; fill: #64748b; }
+  </style>
+
+  <rect x="0" y="0" width="1000" height="700" fill="#F8FAFC"/>
+  <text x="500" y="34" text-anchor="middle" class="title">v2 关键改动：Prefill 与 Prefetch 并行，Decode 等全部 KV 可读取</text>
+
+  <!-- Request -->
+  <rect x="370" y="58" width="260" height="52" rx="10" fill="#DBEAFE" stroke="#3B82F6"/>
+  <text x="500" y="80" text-anchor="middle" class="box">Client Request</text>
+  <text x="500" y="98" text-anchor="middle" class="s">Prompt / Model / 采样参数</text>
+
+  <!-- Cache Lookup -->
+  <rect x="370" y="140" width="260" height="56" rx="10" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="500" y="163" text-anchor="middle" class="box" fill="#92400E">Cache Lookup</text>
+  <text x="500" y="182" text-anchor="middle" class="s">命中块数 · 命中 Token · 数据规模</text>
+
+  <path d="M500,110 L500,129" stroke="#64748B" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- 分流曲线 -->
+  <path d="M500,196 C 300,224 260,236 260,254" fill="none" stroke="#0284C7" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <path d="M500,196 C 700,224 740,236 740,254" fill="none" stroke="#F59E0B" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+
+  <!-- 左支路分组 -->
+  <rect x="80" y="254" width="360" height="252" rx="12" fill="none" stroke="#BAE6FD" stroke-dasharray="6,4"/>
+  <text x="94" y="272" class="grp">Prefill Branch · 算未命中、写新 KV</text>
+
+  <rect x="130" y="290" width="260" height="48" rx="10" fill="#DBEAFE" stroke="#3B82F6"/>
+  <text x="260" y="310" text-anchor="middle" class="box">P Prefill</text>
+  <text x="260" y="328" text-anchor="middle" class="s">只计算未命中的 8K Token</text>
+
+  <rect x="130" y="368" width="260" height="48" rx="10" fill="#E0F2FE" stroke="#0284C7"/>
+  <text x="260" y="388" text-anchor="middle" class="box">KV Persistence</text>
+  <text x="260" y="406" text-anchor="middle" class="s">新 KV 写入 UCM 共享存储</text>
+
+  <rect x="130" y="446" width="260" height="34" rx="10" fill="#F8FAFC" stroke="#94A3B8"/>
+  <text x="260" y="467" text-anchor="middle" class="s" fill="#334155">产物：KV_PERSISTED</text>
+
+  <!-- 右支路分组 -->
+  <rect x="560" y="254" width="360" height="252" rx="12" fill="none" stroke="#FCD34D" stroke-dasharray="6,4"/>
+  <text x="574" y="272" class="grp">Prefetch Branch · 提前准备已有 KV</text>
+
+  <rect x="610" y="290" width="260" height="48" rx="10" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="740" y="310" text-anchor="middle" class="box" fill="#92400E">Prefetch Decision</text>
+  <text x="740" y="328" text-anchor="middle" class="s">命中 24K，评估成本与收益</text>
+
+  <rect x="610" y="368" width="260" height="48" rx="10" fill="#FEF9C3" stroke="#EAB308"/>
+  <text x="740" y="388" text-anchor="middle" class="box" fill="#854D0E">D Prefetch</text>
+  <text x="740" y="406" text-anchor="middle" class="s">SSD → DRAM，与左侧同时进行</text>
+
+  <rect x="610" y="446" width="260" height="34" rx="10" fill="#F8FAFC" stroke="#94A3B8"/>
+  <text x="740" y="467" text-anchor="middle" class="s" fill="#334155">产物：PREFETCH_READY</text>
+
+  <!-- Decode Admission -->
+  <rect x="330" y="556" width="340" height="52" rx="10" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="500" y="578" text-anchor="middle" class="box" fill="#92400E">Decode Admission</text>
+  <text x="500" y="596" text-anchor="middle" class="s">KV_required ⊆ KV_available，不齐则继续等</text>
+
+  <path d="M260,506 C 260,540 380,540 420,552" fill="none" stroke="#0284C7" stroke-width="1.5" marker-end="url(#arrow-blue)"/>
+  <path d="M740,506 C 740,540 620,540 580,552" fill="none" stroke="#F59E0B" stroke-width="1.5" marker-end="url(#arrow-amber)"/>
+
+  <!-- Decode -->
+  <rect x="370" y="636" width="260" height="44" rx="10" fill="#D1FAE5" stroke="#10B981"/>
+  <text x="500" y="663" text-anchor="middle" class="box" fill="#065F46">D Decode → Stream Response</text>
+  <path d="M500,608 L500,625" stroke="#64748B" stroke-width="1.4" marker-end="url(#arrow)"/>
+</svg>

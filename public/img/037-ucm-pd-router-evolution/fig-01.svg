@@ -1,0 +1,159 @@
+<svg viewBox="0 0 1000 548" width="1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Router 设计在五轮讨论中从通用编排逐步收敛到纯路由的过程">
+  <defs>
+    <marker id="arrow-gray" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 L2,4 z" fill="#94A3B8"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif; }
+    .title { font-size: 15px; fill: #1e293b; }
+    .stage { font-size: 11px; font-weight: 600; }
+    .sub { font-size: 11.5px; fill: #1e293b; font-weight: 600; }
+    .chip { font-size: 10px; }
+    .bullet { font-size: 10px; fill: #334155; }
+    .trig { font-size: 9.5px; fill: #92400E; }
+    .legend { font-size: 10.5px; fill: #475569; }
+    .note { font-size: 10.5px; fill: #64748b; }
+  </style>
+
+  <rect x="0" y="0" width="1000" height="548" fill="#F8FAFC"/>
+  <text x="500" y="34" text-anchor="middle" class="title">28 分钟五易其稿：Router 从「什么都协调」退回到只管节点和生命周期</text>
+
+  <!-- 卡片 -->
+  <rect x="40" y="64" width="166" height="380" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="238" y="64" width="166" height="380" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="436" y="64" width="166" height="380" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="634" y="64" width="166" height="380" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="832" y="64" width="166" height="380" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+
+  <!-- 头部色带 -->
+  <path d="M40,74 a10,10 0 0 1 10,-10 h146 a10,10 0 0 1 10,10 v22 h-166 z" fill="#DBEAFE"/>
+  <text x="123" y="86" text-anchor="middle" class="stage" fill="#1E40AF">v0 · 通用 PD 方案</text>
+  <path d="M238,74 a10,10 0 0 1 10,-10 h146 a10,10 0 0 1 10,10 v22 h-166 z" fill="#DBEAFE"/>
+  <text x="321" y="86" text-anchor="middle" class="stage" fill="#1E40AF">v1 · 三层初稿</text>
+  <path d="M436,74 a10,10 0 0 1 10,-10 h146 a10,10 0 0 1 10,10 v22 h-166 z" fill="#FEF3C7"/>
+  <text x="519" y="86" text-anchor="middle" class="stage" fill="#92400E">v2 · 缓存感知</text>
+  <path d="M634,74 a10,10 0 0 1 10,-10 h146 a10,10 0 0 1 10,10 v22 h-166 z" fill="#FEF3C7"/>
+  <text x="717" y="86" text-anchor="middle" class="stage" fill="#92400E">v3 · 去中心化修正</text>
+  <path d="M832,74 a10,10 0 0 1 10,-10 h146 a10,10 0 0 1 10,10 v22 h-166 z" fill="#D1FAE5"/>
+  <text x="915" y="86" text-anchor="middle" class="stage" fill="#166534">v4 · 极简定稿</text>
+
+  <!-- 卡片间箭头 -->
+  <path d="M208,254 L228,254" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#arrow-gray)"/>
+  <path d="M406,254 L426,254" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#arrow-gray)"/>
+  <path d="M604,254 L624,254" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#arrow-gray)"/>
+  <path d="M802,254 L822,254" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#arrow-gray)"/>
+
+  <!-- v0 内容 -->
+  <text x="54" y="116" class="sub">Router 组件</text>
+  <rect x="54" y="126" width="60" height="20" rx="5" fill="#EEF2FF" stroke="#6366F1"/>
+  <text x="84" y="140" text-anchor="middle" class="chip" fill="#3730A3">P Selector</text>
+  <rect x="118" y="126" width="60" height="20" rx="5" fill="#ECFDF5" stroke="#10B981"/>
+  <text x="148" y="140" text-anchor="middle" class="chip" fill="#065F46">D Selector</text>
+  <rect x="54" y="152" width="72" height="20" rx="5" fill="#F1F5F9" stroke="#94A3B8"/>
+  <text x="90" y="166" text-anchor="middle" class="chip" fill="#475569">Coordinator</text>
+  <rect x="130" y="152" width="56" height="20" rx="5" fill="#F1F5F9" stroke="#94A3B8"/>
+  <text x="158" y="166" text-anchor="middle" class="chip" fill="#475569">Registry</text>
+  <rect x="54" y="178" width="72" height="20" rx="5" fill="#E0F2FE" stroke="#0284C7"/>
+  <text x="90" y="192" text-anchor="middle" class="chip" fill="#075985">状态机</text>
+  <line x1="54" y1="214" x2="192" y2="214" stroke="#E2E8F0"/>
+  <text x="54" y="232" class="bullet">· 串行链路：P→交接→D</text>
+  <text x="54" y="250" class="bullet">· Router 搬 KV 元数据</text>
+  <text x="54" y="268" class="bullet">· 倾向 D 主动预取</text>
+  <text x="54" y="286" class="bullet">· YAML + Round Robin</text>
+  <rect x="54" y="372" width="138" height="56" rx="6" fill="#FFFBEB" stroke="#FCD34D"/>
+  <text x="62" y="389" class="trig">14:42 提问</text>
+  <text x="62" y="406" class="trig">「最基础的 PD 分离</text>
+  <text x="62" y="421" class="trig">router 怎么做？」</text>
+
+  <!-- v1 内容 -->
+  <text x="252" y="116" class="sub">分层与领域</text>
+  <rect x="252" y="126" width="70" height="20" rx="5" fill="#EEF2FF" stroke="#6366F1"/>
+  <text x="287" y="140" text-anchor="middle" class="chip" fill="#3730A3">ServingGroup</text>
+  <rect x="326" y="126" width="50" height="20" rx="5" fill="#F1F5F9" stroke="#94A3B8"/>
+  <text x="351" y="140" text-anchor="middle" class="chip" fill="#475569">NodePool</text>
+  <rect x="252" y="152" width="66" height="20" rx="5" fill="#ECFDF5" stroke="#10B981"/>
+  <text x="285" y="166" text-anchor="middle" class="chip" fill="#065F46">Assignment</text>
+  <rect x="322" y="152" width="66" height="20" rx="5" fill="#ECFDF5" stroke="#10B981"/>
+  <text x="355" y="166" text-anchor="middle" class="chip" fill="#065F46">Directive</text>
+  <line x1="252" y1="188" x2="390" y2="188" stroke="#E2E8F0"/>
+  <text x="252" y="206" class="bullet">· 两域：路由 + 协调</text>
+  <text x="252" y="224" class="bullet">· 四用例，六边形端口</text>
+  <text x="252" y="242" class="bullet">· 不感知 KV 命中率</text>
+  <text x="252" y="260" class="bullet">· 预取目标须与 D 一致</text>
+  <rect x="252" y="372" width="138" height="56" rx="6" fill="#FFFBEB" stroke="#FCD34D"/>
+  <text x="260" y="389" class="trig">14:45 提问</text>
+  <text x="260" y="406" class="trig">「按领域层、应用层、</text>
+  <text x="260" y="421" class="trig">适配层怎么设计？」</text>
+
+  <!-- v2 内容 -->
+  <text x="450" y="116" class="sub">职责转向</text>
+  <rect x="450" y="126" width="58" height="20" rx="5" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="479" y="140" text-anchor="middle" class="chip" fill="#92400E">CacheMatch</text>
+  <rect x="512" y="126" width="62" height="20" rx="5" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="543" y="140" text-anchor="middle" class="chip" fill="#92400E">PrefetchTask</text>
+  <rect x="450" y="152" width="86" height="20" rx="5" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="493" y="166" text-anchor="middle" class="chip" fill="#92400E">PrefetchDecision</text>
+  <line x1="450" y1="188" x2="588" y2="188" stroke="#E2E8F0"/>
+  <text x="450" y="206" class="bullet">· 串行变双分支并行</text>
+  <text x="450" y="224" class="bullet">· 四域，Decode Admission</text>
+  <text x="450" y="242" class="bullet">· SSD→DRAM 藏进 Prefill</text>
+  <text x="450" y="260" class="bullet">· 预取失败降级不误请求</text>
+  <rect x="450" y="372" width="138" height="56" rx="6" fill="#FFFBEB" stroke="#FCD34D"/>
+  <text x="458" y="389" class="trig">14:51 提问</text>
+  <text x="458" y="406" class="trig">「集中式存储，能否</text>
+  <text x="458" y="421" class="trig">lookup 后提前启 D？」</text>
+
+  <!-- v3 内容 -->
+  <text x="648" y="116" class="sub">删掉重服务</text>
+  <rect x="648" y="126" width="70" height="20" rx="5" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="683" y="140" text-anchor="middle" class="chip" fill="#92400E">CacheMatch</text>
+  <rect x="722" y="126" width="66" height="20" rx="5" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="755" y="140" text-anchor="middle" class="chip" fill="#92400E">Decision</text>
+  <rect x="648" y="152" width="80" height="20" rx="5" fill="#E0F2FE" stroke="#0284C7"/>
+  <text x="688" y="166" text-anchor="middle" class="chip" fill="#075985">文件系统 Lookup</text>
+  <line x1="648" y1="188" x2="786" y2="188" stroke="#E2E8F0"/>
+  <text x="648" y="206" class="bullet">· 无 master，哈希做文件名</text>
+  <text x="648" y="224" class="bullet">· 复用 UCM Hash 逻辑</text>
+  <text x="648" y="242" class="bullet">· 预取靠请求 Keyword</text>
+  <text x="648" y="260" class="bullet">· 删 PrefetchPort/Controller</text>
+  <rect x="648" y="372" width="138" height="56" rx="6" fill="#FFFBEB" stroke="#FCD34D"/>
+  <text x="656" y="389" class="trig">15:02 补充</text>
+  <text x="656" y="406" class="trig">「去中心化、无 master，</text>
+  <text x="656" y="421" class="trig">命中靠文件系统哈希」</text>
+
+  <!-- v4 内容 -->
+  <text x="846" y="116" class="sub">只留两件事</text>
+  <rect x="846" y="126" width="58" height="20" rx="5" fill="#EEF2FF" stroke="#6366F1"/>
+  <text x="875" y="140" text-anchor="middle" class="chip" fill="#3730A3">Routing</text>
+  <rect x="908" y="126" width="62" height="20" rx="5" fill="#E0F2FE" stroke="#0284C7"/>
+  <text x="939" y="140" text-anchor="middle" class="chip" fill="#075985">Request</text>
+  <line x1="846" y1="162" x2="984" y2="162" stroke="#E2E8F0"/>
+  <text x="846" y="180" class="bullet">· 不持 Tokenizer</text>
+  <text x="846" y="198" class="bullet">· 不感知 Hash</text>
+  <text x="846" y="216" class="bullet">· P/D 请求尽早并提</text>
+  <text x="846" y="234" class="bullet">· 就绪等待归 Connector</text>
+  <rect x="846" y="372" width="138" height="56" rx="6" fill="#FFFBEB" stroke="#FCD34D"/>
+  <text x="854" y="389" class="trig">15:10 反问</text>
+  <text x="854" y="406" class="trig">「能否完全不感知哈希，</text>
+  <text x="854" y="421" class="trig">时机交给 UCM？」</text>
+
+  <!-- 底部结论 -->
+  <rect x="40" y="470" width="958" height="44" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <circle cx="64" cy="492" r="5" fill="#6366F1"/>
+  <text x="78" y="496" class="note">Router 概念逐版减少：协调域、缓存域、预取域相继移除，缓存判断一路下沉</text>
+  <circle cx="520" cy="492" r="5" fill="#10B981"/>
+  <text x="534" y="496" class="note">决定「何时读 KV」的知识始终在 UCM，最后职责也留在了那里</text>
+
+  <!-- 图例 -->
+  <rect x="40" y="526" width="10" height="10" rx="2" fill="#DBEAFE" stroke="#3B82F6"/>
+  <text x="55" y="535" class="legend">基础路由</text>
+  <rect x="130" y="526" width="10" height="10" rx="2" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="145" y="535" class="legend">缓存预取</text>
+  <rect x="220" y="526" width="10" height="10" rx="2" fill="#F1F5F9" stroke="#94A3B8"/>
+  <text x="235" y="535" class="legend">协调/注册</text>
+  <rect x="320" y="526" width="10" height="10" rx="2" fill="#E0F2FE" stroke="#0284C7"/>
+  <text x="335" y="535" class="legend">请求/状态</text>
+  <rect x="420" y="526" width="10" height="10" rx="2" fill="#ECFDF5" stroke="#10B981"/>
+  <text x="435" y="535" class="legend">最终保留</text>
+</svg>
