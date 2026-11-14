@@ -13,7 +13,8 @@ import { siteConfig } from "./src/config/siteConfig.ts";
 import { getTranslation, I18nKey } from "./src/i18n/index.ts";
 import { calloutPlugin } from "./src/integrations/markdownCallout/index.ts";
 import { markdownForAgents } from "./src/integrations/markdownForAgents/index.ts";
-import { mathKatexPlugin } from "./src/integrations/mathKatex/index.ts";
+import { directiveGuardPlugin } from "./src/integrations/markdownDirective/index.ts";
+import { mathKatexHastPlugin, mathKatexPlugin } from "./src/integrations/mathKatex/index.ts";
 
 const expressiveCodePlugins = [];
 const siteTranslation = getTranslation(siteConfig.lang);
@@ -126,8 +127,8 @@ export default defineConfig({
   markdown: {
     processor: satteri({
       features: { directive: true, math: true },
-      mdastPlugins: [spoilerPlugin, mathKatexPlugin],
-      hastPlugins: [calloutPlugin, imageCaptionPlugin, tableWrapPlugin],
+      mdastPlugins: [spoilerPlugin, directiveGuardPlugin, mathKatexPlugin],
+      hastPlugins: [mathKatexHastPlugin, calloutPlugin, imageCaptionPlugin, tableWrapPlugin],
     }),
   },
   vite: {
