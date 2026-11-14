@@ -1,0 +1,65 @@
+<svg viewBox="0 0 1000 420" width="1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="三个连续 step 的 token 预算分配">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 L2,4 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans CJK SC', system-ui, sans-serif; }
+    .t { font-size: 12px; fill: #1e293b; }
+    .s { font-size: 10.5px; fill: #64748b; }
+    .in { font-size: 12px; fill: #78350f; }
+    .title { font-size: 15px; fill: #1e293b; }
+  </style>
+
+  <rect x="0" y="0" width="1000" height="420" fill="#F8FAFC"/>
+
+  <text x="500" y="36" text-anchor="middle" class="title">三个 step 的 token 预算：decode 先占位，长 prompt 切成 chunk</text>
+
+  <!-- 预算上限 -->
+  <path d="M950,88 L950,312" fill="none" stroke="#94a3b8" stroke-width="1" stroke-dasharray="5,4"/>
+  <text x="950" y="80" text-anchor="end" class="s">预算上限 B_step = 8192 token</text>
+
+  <!-- step 1 -->
+  <text x="140" y="134" text-anchor="end" class="t">step 1</text>
+  <text x="140" y="151" text-anchor="end" class="s">T = 8192</text>
+  <rect x="150" y="120" width="800" height="34" rx="6" fill="#E2E8F0"/>
+  <rect x="150" y="120" width="25" height="34" rx="4" fill="#D1FAE5" stroke="#10B981"/>
+  <rect x="175" y="120" width="775" height="34" rx="4" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="562" y="142" text-anchor="middle" class="in">prompt A · chunk 1 · 7936 token</text>
+
+  <!-- step 2 -->
+  <text x="140" y="204" text-anchor="end" class="t">step 2</text>
+  <text x="140" y="221" text-anchor="end" class="s">T = 8192</text>
+  <rect x="150" y="190" width="800" height="34" rx="6" fill="#E2E8F0"/>
+  <rect x="150" y="190" width="25" height="34" rx="4" fill="#D1FAE5" stroke="#10B981"/>
+  <rect x="175" y="190" width="775" height="34" rx="4" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="562" y="212" text-anchor="middle" class="in">prompt A · chunk 2 · 7936 token，剩余 128</text>
+
+  <!-- step 3 -->
+  <text x="140" y="274" text-anchor="end" class="t">step 3</text>
+  <text x="140" y="291" text-anchor="end" class="s">T = 6384</text>
+  <rect x="150" y="260" width="800" height="34" rx="6" fill="#E2E8F0"/>
+  <rect x="150" y="260" width="25" height="34" rx="4" fill="#D1FAE5" stroke="#10B981"/>
+  <rect x="175" y="260" width="13" height="34" rx="3" fill="#F59E0B"/>
+  <rect x="188" y="260" width="585" height="34" rx="4" fill="#FEF3C7" stroke="#F59E0B"/>
+  <rect x="773" y="260" width="177" height="34" rx="4" fill="#E2E8F0" stroke="#CBD5E1"/>
+  <text x="480" y="282" text-anchor="middle" class="in">prompt B · 6000 token</text>
+  <text x="862" y="282" text-anchor="middle" class="s">空闲 1808</text>
+
+  <!-- decode 标注 -->
+  <path d="M162,104 L162,112" fill="none" stroke="#10B981" stroke-width="1.2" marker-end="url(#arrow)"/>
+  <text x="150" y="94" class="s">decode 256 个请求，各 1 token</text>
+
+  <!-- chunk 3 与首 token 标注 -->
+  <path d="M187,300 C 187,314 196,318 206,318" fill="none" stroke="#F59E0B" stroke-width="1.2"/>
+  <text x="212" y="322" class="s">chunk 3 · 128 token，prefill 在这里收尾，首个 token 采出</text>
+
+  <!-- 图例 -->
+  <rect x="150" y="376" width="14" height="14" rx="3" fill="#D1FAE5" stroke="#10B981"/>
+  <text x="172" y="388" class="s">decode token</text>
+  <rect x="300" y="376" width="14" height="14" rx="3" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="322" y="388" class="s">prefill chunk</text>
+  <rect x="450" y="376" width="14" height="14" rx="3" fill="#E2E8F0" stroke="#CBD5E1"/>
+  <text x="472" y="388" class="s">本步未用的预算</text>
+</svg>
