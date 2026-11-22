@@ -94,16 +94,11 @@ MCPS2ONE 的设计理念是"本地优先"：
 
 ## 快速上手
 
-安装非常简单：
+代码在 GitHub 上，安装方式和启动参数以仓库 README 为准：
 
 ```bash
-pip install mcps2one
-```
-
-启动服务：
-
-```bash
-mcps2one --config your_config.json
+git clone https://github.com/Potterluo/MCPS2ONE
+cd MCPS2ONE
 ```
 
 然后将你的 AI 应用（Claude Desktop、Cursor 等）的 MCP endpoint 配置为 MCPS2ONE 提供的地址。
@@ -125,6 +120,5 @@ MCP 协议在扩张，工具数量越多，token 消耗的问题就越突出。M
 
 ---
 
-- 项目地址：[GitHub - MCPS2ONE](https://github.com/your-repo/mcps2one)
-- 安装：`pip install mcps2one`
+- 项目地址：[GitHub - MCPS2ONE](https://github.com/Potterluo/MCPS2ONE)
 - 许可证：MIT

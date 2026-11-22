@@ -152,11 +152,11 @@ MCP 标准输入输出
 ### 安装与启动
 
 ```bash
-git clone https://github.com/your-repo/api2mcp
-cd api2mcp
-pip install -r requirements.txt
-python main.py
+git clone https://github.com/Potterluo/API2MCP
+cd API2MCP
 ```
+
+依赖安装与启动命令以仓库 README 为准。
 
 服务启动后：
 
@@ -283,7 +283,7 @@ API 统一管理：团队内部有多个 API 服务，配置散落在各处。�
 
 API2MCP 解决的是如何让 AI Agent 便捷调用现有 REST API 的问题：用 MCP 协议统一接口，再用 Web 管理界面简化配置过程。如果你正在做 AI Agent 开发，或者需要管理多个 API 服务，它值得一试。
 
-项目地址：[GitHub - API2MCP](https://github.com/your-repo/api2mcp)
+项目地址：[GitHub - API2MCP](https://github.com/Potterluo/API2MCP)
 
 ---
 
