@@ -1,272 +1,71 @@
 ---
-title: 详解 MCP 传输机制：stdio、SSE 和 HTTP 怎么选？
-description: 对比 stdio、SSE、Streamable HTTP 三种 MCP 传输机制的适用场景与选型建议
+title: MCP 现在只有两种传输方式，SSE 降级成了编码
+description: 2025-03-26 版规范之后，stdio 与 Streamable HTTP 是仅有的两种传输，SSE 变成其中一种响应编码。旧的双端点 HTTP+SSE 已经不在规范里，本文给出两者的实际约束和迁移路径。
 publishedAt: "2026-05-20"
+updatedAt: "2026-11-22"
 category: 技术分享
 tags:
   - MCP
   - AI
   - 协议
+  - HTTP
 draft: false
 ---
 
-MCP（Model Context Protocol）是连接 AI 模型与外部工具的标准协议，支持三种传输方式：stdio、SSE 和 HTTP。
+查 MCP 传输的资料，最容易撞上一种过时说法：stdio、SSE、HTTP 三种并列，各给一张适用场景表。2025-03-26 版规范之后这个分法不成立了。现行规范里只有两种传输，SSE 不再是独立的那一种，而是 Streamable HTTP 里的一种响应编码。
 
-## MCP 传输机制概述
+## 规范改了什么
 
-MCP 的设计目标是让 AI 模型能够安全、高效地访问外部数据源和工具。传输层负责在客户端（通常是 AI 应用）和服务器（提供工具/数据的服务）之间传递 JSON-RPC 消息。
+2024-11-05 那一版确实是两种：stdio，和 HTTP+SSE。后者开两个端点，客户端先 `GET /sse` 建立长连接，服务端通过一条 `endpoint` 事件把 POST 地址告诉客户端，之后客户端往那个地址发 JSON-RPC，响应从 SSE 流里回来。
 
-选择合适的传输方式，直接影响系统的：
+2025-03-26 版用 Streamable HTTP 取代了 HTTP+SSE。端点从两个变成一个，客户端 POST 上去，服务端要么直接回 `application/json`，要么回 `text/event-stream` 走流式。2025-06-18 版又在这个基础上补了协议版本头等细节。
 
-- 部署复杂度：本地工具 vs 远程服务
-- 性能表现：延迟、吞吐量
-- 安全性：进程隔离 vs 网络暴露
-- 可扩展性：单机 vs 分布式
+所以「HTTP 传输不支持服务端推送」这句话现在是错的。Streamable HTTP 支持推送，方式是在一次 POST 的 SSE 流里推，或者由客户端另开一条 `GET` 流的通道。
 
-## 一、stdio 传输
+## stdio 的硬约束
 
-### 工作原理
+stdio 是最简单的一种：客户端把 MCP 服务端当子进程拉起来，一条 JSON-RPC 一行，标准输入输出各走一个方向。约束有三条，第二条最容易踩。
 
-stdio（标准输入/输出）传输是最简单直接的方式。MCP 服务器作为子进程启动，通过 stdin 接收请求，通过 stdout 返回响应。
+标准输出归协议所有。任何一行不是 JSON-RPC 的东西写进 stdout，客户端解析就断在那里。
 
-```
-AI 应用 → stdin → MCP Server → stdout → AI 应用
-```
+日志必须写 stderr。调试信息、启动 banner、警告，全部走 `console.error` 或 `sys.stderr.write`。
 
-消息格式遵循 JSON-RPC 2.0 规范，每个消息以换行符分隔。
+进程生命周期跟客户端绑定。客户端退出，服务端通常也结束；每个客户端一份独立进程，状态不共享。没有鉴权这一层，信任边界就是本机的用户权限，所以 stdio 不该用在对端不受信任的场景。
 
-### 典型实现
+## Streamable HTTP 怎么跑
 
-```typescript
-// 客户端启动 MCP 服务器进程
-const serverProcess = spawn("my-mcp-server", [], {
-  stdio: ["pipe", "pipe", "pipe"],
-});
+一个端点（通常 `/mcp`），客户端 POST JSON-RPC 消息上去。
 
-// 发送请求
-serverProcess.stdin.write(JSON.stringify(request) + "\n");
+响应有两种形态。服务端能立刻给结果，就回 `application/json`；需要流式推事件，就回 `text/event-stream`，在这条流里发多条消息，最后关掉。同一个入口既能表达「一次请求一条响应」，也能表达「一次请求多条通知」。
 
-// 接收响应
-serverProcess.stdout.on("data", (data) => {
-  const response = JSON.parse(data.toString());
-  // 处理响应
-});
-```
+服务端要主动发起消息（通知、请求），有两条路：在同一次 POST 的流里顺带推，或者让客户端用一个 `GET` 打开独立的 SSE 流。第二条是可选的，服务端不支持就回 405。
 
-### 优点
+会话靠头传。服务端在 `initialize` 的响应里给一个 `Mcp-Session-Id`，客户端后续每个请求都带上它。服务端想结束这个会话就返回 404，客户端收到之后要重新走一遍初始化。
 
-1. 零网络开销：进程间直接通信，无 TCP/IP 协议栈开销
-2. 隔离与安全：服务器进程崩溃不影响主应用，只有本地可访问，没有网络暴露风险
-3. 部署简单：无需配置端口、防火墙、SSL
+断线续传靠事件 id。SSE 的每条事件带 `id`，客户端重连时把 `Last-Event-ID` 带上，服务端从那条之后接着发。长任务里这一条很实用，网络抖一下不用从头再来。
 
-### 缺点
+版本协商也靠头。2025-06-18 版之后，客户端每个请求要带 `MCP-Protocol-Version`；缺省时服务端按 2025-03-26 处理。服务端不认识这个版本就回 400，不要静默降级。
 
-1. 仅限本地：无法跨机器通信
-2. 生命周期绑定：客户端退出时服务器通常也要终止
-3. 调试困难：stdout/stdin 被占用，日志输出受限
-4. 资源限制：每个客户端可能启动独立的服务器进程
+安全上有两条规范明确要求的：服务端校验 `Origin`，挡住从浏览器发起的 DNS rebinding；本地起的服务绑 `127.0.0.1`，不要绑 `0.0.0.0`。
 
-### 适用场景
+## 旧的双端点为什么被换掉
 
-- 本地 CLI 工具：如 Claude Code、Cursor 等编辑器集成
-- 文件系统访问：读写本地文件、搜索代码库
-- 开发调试：快速验证 MCP 服务器逻辑
-- 单用户场景：个人开发环境、本地自动化脚本
+双端点的方式在负载均衡后面很难受。客户端的 SSE 长连接钉在一台实例上，POST 请求却可能被转发到另一台，两边对不上，会话要么粘滞要么丢。
 
-### 实际案例
+Streamable HTTP 把一个请求和它的响应放进同一次 HTTP 事务，服务端可以完全无状态，也可以只用一个头维持会话。这对多实例部署和水平扩容是本质差别。
 
-Claude Code 使用 stdio 传输连接多个 MCP 服务器：
+## 兼容与选型
 
-- 文件系统服务器：读写本地文件
-- Git 服务器：执行 git 命令
-- 数据库服务器：连接本地数据库
+客户端要同时对付新老服务端，规范给的路子是先试新的：POST `initialize` 到端点，如果收到 4xx（老服务端不认 POST），再回退到 `GET /sse` 那套旧流程。
 
-## 二、SSE 传输
+选型上没有第三项了。
 
-### 工作原理
+本地工具、单用户、要读本机文件：stdio，日志走 stderr。
 
-SSE（Server-Sent Events）是一种基于 HTTP 的单向推送技术。MCP 使用 SSE 实现双向通信：
+远程服务、多用户、需要鉴权和审计：Streamable HTTP，在网关层做 TLS 和身份验证。
 
-- 客户端→服务器：通过 HTTP POST 发送请求
-- 服务器→客户端：通过 SSE 连接推送响应和通知
+需要实时推送：仍然是 Streamable HTTP，用 SSE 流，别当成一种新传输。
 
-```
-AI 应用 ←──SSE连接──→ MCP Server
-        │              │
-        └──HTTP POST──→  (发送请求)
-```
+## 一处需要自己核对
 
-### 典型实现
-
-服务器端（Node.js）：
-
-```typescript
-import express from "express";
-
-const app = express();
-
-// SSE 端点
-app.get("/sse", (req, res) => {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-
-  // 保存连接，用于推送消息
-  const clientId = generateId();
-  connections.set(clientId, res);
-
-  // 发送 endpoint 事件，告知客户端 POST 地址
-  res.write(`event: endpoint\ndata: /message?clientId=${clientId}\n\n`);
-});
-
-// 接收请求的 POST 端点
-app.post("/message", express.json(), (req, res) => {
-  const { clientId } = req.query;
-  const connection = connections.get(clientId);
-
-  // 处理请求，通过 SSE 推送响应
-  handleRequest(req.body).then((response) => {
-    connection.write(`event: message\ndata: ${JSON.stringify(response)}\n\n`);
-  });
-
-  res.sendStatus(200);
-});
-```
-
-客户端：
-
-```typescript
-// 建立 SSE 连接
-const eventSource = new EventSource("http://server/sse");
-
-eventSource.addEventListener("endpoint", (e) => {
-  postEndpoint = e.data; // 保存 POST 地址
-});
-
-eventSource.addEventListener("message", (e) => {
-  const response = JSON.parse(e.data);
-  // 处理响应
-});
-
-// 发送请求
-fetch(postEndpoint, {
-  method: "POST",
-  body: JSON.stringify(request),
-});
-```
-
-### 优点
-
-1. 跨网络通信：支持远程部署、分布式架构
-2. 原生浏览器支持：EventSource API 无需额外库，且内置自动重连
-3. 单向流高效：服务器推送无需客户端轮询
-4. 兼容性好：基于标准 HTTP，穿透防火墙容易
-
-### 缺点
-
-1. 单向限制：需要 POST+SSE 组合实现双向
-2. 长连接开销：每个客户端占用一个持久连接
-3. 无二进制支持：仅文本消息
-4. 调试复杂：需要网络抓包工具
-
-### 适用场景
-
-- Web 应用集成：浏览器端 AI 应用连接后端服务
-- 远程 MCP 服务：云端部署的工具和数据源
-- 团队共享：多个客户端连接同一服务器
-- 企业环境：统一管理的 MCP 服务器集群
-
-### 实际案例
-
-- 远程数据库服务：云数据库 MCP 服务器
-- API 网关：统一 MCP 工具入口
-- 协作平台：多用户共享工具集
-
-## 三、HTTP 传输
-
-### 工作原理
-
-HTTP 传输使用简单的请求-响应模式：客户端发送 HTTP POST 请求，服务器返回 JSON 响应。
-
-与 SSE 不同，HTTP 传输不支持服务器主动推送通知，客户端需要轮询获取异步消息。
-
-```
-AI 应用 ──HTTP POST──→ MCP Server
-                    ←─JSON Response──
-```
-
-### 优点
-
-1. 实现简单：标准 RESTful 风格
-2. 无长连接：资源占用更低
-3. 易于缓存：可利用 HTTP 缓存机制
-4. 负载均衡友好：适合水平扩展
-
-### 缺点
-
-1. 无实时推送：通知需要轮询
-2. 延迟与空轮询：轮询间隔影响响应速度，空轮询也浪费资源
-
-### 适用场景
-
-- 低频操作：不需要实时通知的场景
-- 受限环境：不支持 SSE 的特殊网络环境
-- 简单集成：快速原型开发
-
-## 传输方式对比表
-
-| 特性       | stdio    | SSE          | HTTP         |
-| ---------- | -------- | ------------ | ------------ |
-| 通信模式   | 双向流   | SSE推送+POST | 请求-响应    |
-| 网络支持   | 仅本地   | 远程         | 远程         |
-| 实时性     | 最高     | 高           | 中（需轮询） |
-| 部署复杂度 | 低       | 中           | 低           |
-| 安全性     | 进程隔离 | 需认证+HTTPS | 需认证+HTTPS |
-| 资源开销   | 进程     | 长连接       | 无           |
-| 浏览器支持 | 否       | 是           | 是           |
-| 推送通知   | 支持     | 支持         | 不支持       |
-
-## 选型决策树
-
-```
-开始选型
-│
-├─ 是否需要远程访问？
-│   ├─ 否 → stdio（本地工具）
-│   │
-│   └─ 是 → 需要服务器推送通知？
-│       ├─ 是 → SSE（推荐）
-│       ├─ 否 → HTTP（简单场景）
-│       └─ 受限环境 → HTTP
-```
-
-## 最佳实践建议
-
-### 优先选择 stdio 的场景
-
-1. 本地开发工具：编辑器插件、CLI 工具
-2. 文件/代码操作：读写本地资源
-3. 快速迭代：开发调试阶段
-
-### 优先选择 SSE 的场景
-
-1. 生产级远程服务：需要稳定推送
-2. Web 应用：浏览器客户端
-3. 多用户场景：共享 MCP 服务器
-
-### 安全注意事项
-
-stdio：
-
-- 验证服务器二进制来源
-- 限制服务器权限范围
-
-SSE/HTTP：
-
-- 启用 HTTPS 加密传输
-- 实现身份认证（API Key、OAuth）
-- 限制 CORS 来源
-- 监控异常请求
-
-## 总结
-
-本地工具用 stdio（如 Claude Code），远程服务用 SSE（如云端 MCP 服务器）。HTTP 实现简单但缺实时性，适合不需要推送的简单场景。
+上面按 2025-03-26 与 2025-06-18 两版规范写。如果你维护的客户端还要对接 2024-11-05 的老服务端，`endpoint` 事件那套逻辑仍然要留着，且只能走兼容路径。
