@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" viewBox="0 0 1000 520" role="img" aria-labelledby="title desc">
+  <title id="title">同一个输入 Token 指标的四种时间口径</title>
+  <desc id="desc">用本地实测值对比进程累计、区间总量、最新短窗口速率和区间平均速率。</desc>
+  <defs>
+    <style>
+      text { font-family: 'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif; fill: #1e293b; }
+      .title { font-size: 16px; font-weight: 600; }
+      .card-title { font-size: 13px; font-weight: 600; }
+      .body { font-size: 12px; }
+      .formula { font-family: ui-monospace,'Cascadia Code','Noto Sans Mono',monospace; font-size: 10.5px; fill: #475569; }
+      .value { font-size: 22px; font-weight: 600; }
+      .small { font-size: 10.5px; fill: #64748b; }
+    </style>
+  </defs>
+  <rect width="1000" height="520" fill="#F8FAFC"/>
+  <text class="title" x="500" y="32" text-anchor="middle">同一个 prompt_tokens_total，四个数字各自正确</text>
+  <text class="small" x="500" y="52" text-anchor="middle">示例来自 2026-11-28 本地合成指标，固定同一求值时刻；它只用于解释口径</text>
+
+  <!-- Raw cumulative counter -->
+  <rect x="45" y="80" width="430" height="165" rx="10" fill="#ffffff" stroke="#94a3b8"/>
+  <text class="card-title" x="65" y="108">进程累计值：启动以来一共多少？</text>
+  <text class="formula" x="65" y="137">sum(vllm:prompt_tokens_total)</text>
+  <text class="value" x="65" y="174" fill="#475569">6.84B tokens</text>
+  <text class="small" x="65" y="200">进程重启后重新计数，随所选时间范围不变</text>
+  <text class="small" x="65" y="220">适合看总量，不适合直接当最近流量</text>
+
+  <!-- Range total -->
+  <rect x="525" y="80" width="430" height="165" rx="10" fill="#dbeafe" stroke="#3b82f6"/>
+  <text class="card-title" x="545" y="108">区间总量：这 30 分钟新增多少？</text>
+  <text class="formula" x="545" y="137">sum(increase(vllm:prompt_tokens_total[30m]))</text>
+  <text class="value" x="545" y="174" fill="#1e40af">167.37M tokens</text>
+  <text class="small" x="545" y="200">increase 取 counter 在区间内的增量</text>
+  <text class="small" x="545" y="220">区间扩大时，累计值通常也会扩大</text>
+
+  <!-- Latest short-window rate -->
+  <rect x="45" y="280" width="430" height="165" rx="10" fill="#fef3c7" stroke="#f59e0b"/>
+  <text class="card-title" x="65" y="308">最新短窗口速率：最近 1 分钟多快？</text>
+  <text class="formula" x="65" y="337">sum(rate(vllm:prompt_tokens_total[1m]))</text>
+  <text class="value" x="65" y="374" fill="#b45309">97.79K tok/s</text>
+  <text class="small" x="65" y="400">取短窗口曲线的最后一个非空点</text>
+  <text class="small" x="65" y="420">对突发流量敏感，会随末点明显波动</text>
+
+  <!-- Range average rate -->
+  <rect x="525" y="280" width="430" height="165" rx="10" fill="#d1fae5" stroke="#22c55e"/>
+  <text class="card-title" x="545" y="308">区间平均速率：30 分钟平均多快？</text>
+  <text class="formula" x="545" y="337">sum(increase(vllm:prompt_tokens_total[30m])) / 1800</text>
+  <text class="value" x="545" y="374" fill="#166534">92.99K tok/s</text>
+  <text class="small" x="545" y="400">区间总增量 ÷ 区间秒数</text>
+  <text class="small" x="545" y="420">更稳定，但不要与最新短窗口速率直接比</text>
+
+  <text class="small" x="500" y="480" text-anchor="middle">读面板时先问：分子是什么窗口，分母是什么窗口，最后取了哪个点？</text>
+</svg>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" viewBox="0 0 1000 450" role="img" aria-labelledby="title desc">
+  <title id="title">vLLM 请求阶段与 Prometheus 指标地图</title>
+  <desc id="desc">请求从排队、首 Token、持续生成到完成，各阶段对应队列、TTFT、TPOT、ITL、E2E 与缓存指标。</desc>
+  <defs>
+    <style>
+      text { font-family: 'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',system-ui,sans-serif; fill: #1e293b; }
+      .title { font-size: 16px; font-weight: 600; }
+      .box-title { font-size: 13px; font-weight: 600; }
+      .body { font-size: 12px; }
+      .small { font-size: 10.5px; fill: #64748b; }
+      .metric { font-size: 11px; fill: #475569; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="2" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,4 L0,8 L2,4 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="450" fill="#F8FAFC"/>
+  <text class="title" x="500" y="32" text-anchor="middle">一次请求经过哪里，就看哪一组指标</text>
+  <text class="small" x="500" y="52" text-anchor="middle">先按请求阶段定位，再选择 Counter、Gauge 或 Histogram 的计算方式</text>
+
+  <!-- Request-stage arrows -->
+  <path d="M250,112 L264,112" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M490,112 L504,112" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <path d="M730,112 L744,112" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Four request stages -->
+  <rect x="35" y="80" width="210" height="64" rx="10" fill="#dbeafe" stroke="#3b82f6"/>
+  <text class="box-title" x="140" y="105" text-anchor="middle">请求到达</text>
+  <text class="metric" x="140" y="126" text-anchor="middle">prompt_tokens_total</text>
+
+  <rect x="275" y="80" width="210" height="64" rx="10" fill="#fef3c7" stroke="#f59e0b"/>
+  <text class="box-title" x="380" y="105" text-anchor="middle">排队 / Prefill</text>
+  <text class="metric" x="380" y="126" text-anchor="middle">waiting · queue_time · TTFT</text>
+
+  <rect x="515" y="80" width="210" height="64" rx="10" fill="#f3e8ff" stroke="#a855f7"/>
+  <text class="box-title" x="620" y="105" text-anchor="middle">持续生成 / Decode</text>
+  <text class="metric" x="620" y="126" text-anchor="middle">TPOT · ITL · generation_tokens</text>
+
+  <rect x="755" y="80" width="210" height="64" rx="10" fill="#d1fae5" stroke="#22c55e"/>
+  <text class="box-title" x="860" y="105" text-anchor="middle">请求完成</text>
+  <text class="metric" x="860" y="126" text-anchor="middle">E2E · finished_reason</text>
+
+  <!-- Cache and latency analysis boxes -->
+  <rect x="35" y="185" width="450" height="128" rx="10" fill="#ecfdf5" stroke="#10b981" stroke-dasharray="6,4"/>
+  <text class="box-title" x="55" y="209">缓存收益，主要看 Prefill 之前省了多少</text>
+  <text class="body" x="55" y="237">本地 HBM：prefix_cache_hits_total / queries</text>
+  <text class="body" x="55" y="261">外部缓存：external_prefix_cache_hits_total / queries</text>
+  <text class="body" x="55" y="285">综合：(本地 + 外部) / queries，未命中看灰色部分</text>
+  <text class="small" x="55" y="303">查询与命中计数都是 Token，不是请求数。</text>
+
+  <rect x="515" y="185" width="450" height="128" rx="10" fill="#eef2ff" stroke="#6366f1" stroke-dasharray="6,4"/>
+  <text class="box-title" x="535" y="209">响应速度，用直方图回答三个问题</text>
+  <text class="body" x="535" y="237">平均：sum(_sum 的变化量) / sum(_count 的变化量)</text>
+  <text class="body" x="535" y="261">分位：histogram_quantile + bucket</text>
+  <text class="body" x="535" y="285">单请求速度：1 / TPOT(秒)，不是全服务吞吐</text>
+  <text class="small" x="535" y="303">TPOT 按请求统计；ITL 按相邻输出事件统计。</text>
+
+  <!-- Metric type legend -->
+  <rect x="35" y="350" width="290" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text class="box-title" x="180" y="374" text-anchor="middle">Counter</text>
+  <text class="small" x="180" y="395" text-anchor="middle">累计增长，用 increase / rate</text>
+
+  <rect x="355" y="350" width="290" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text class="box-title" x="500" y="374" text-anchor="middle">Gauge</text>
+  <text class="small" x="500" y="395" text-anchor="middle">当前状态，用 last / avg / max</text>
+
+  <rect x="675" y="350" width="290" height="60" rx="10" fill="#ffffff" stroke="#cbd5e1"/>
+  <text class="box-title" x="820" y="374" text-anchor="middle">Histogram</text>
+  <text class="small" x="820" y="395" text-anchor="middle">耗时分布，用 _sum/_count/_bucket</text>
+</svg>
